@@ -15,7 +15,6 @@
             --border: #eee;
             --link: #0066cc;
         }
-        
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg: #0d0d0d;
@@ -26,9 +25,7 @@
                 --link: #66b3ff;
             }
         }
-        
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Source Serif 4', Georgia, serif;
             font-size: 17px;
@@ -39,58 +36,40 @@
             margin: 0 auto;
             padding: 80px 24px;
         }
-        
         header { margin-bottom: 64px; }
-        
         h1 {
             font-size: 28px;
             font-weight: 600;
             letter-spacing: -0.02em;
             margin-bottom: 8px;
         }
-        
         .subtitle {
             color: var(--text-secondary);
             font-size: 15px;
             margin-bottom: 20px;
         }
-        
         .bio {
             color: var(--text-secondary);
             font-size: 16px;
             line-height: 1.5;
         }
-        
         .links {
             margin-top: 16px;
             font-size: 14px;
         }
-        
         .links a {
             color: var(--link);
             text-decoration: none;
             margin-right: 16px;
         }
-        
         .links a:hover { text-decoration: underline; }
         
-        h2 {
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            color: var(--text-tertiary);
-            margin: 48px 0 24px;
-            padding-bottom: 8px;
+        .posts { list-style: none; }
+        .post {
+            padding: 24px 0;
             border-bottom: 1px solid var(--border);
         }
-        
-        .analysis {
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .analysis:last-child { border-bottom: none; }
+        .post:last-child { border-bottom: none; }
         
         .date {
             font-size: 12px;
@@ -99,48 +78,20 @@
             letter-spacing: 0.1em;
             margin-bottom: 4px;
         }
-        
         .title {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 600;
             margin-bottom: 8px;
         }
-        
         .title a {
             color: var(--text);
             text-decoration: none;
         }
-        
         .title a:hover { color: var(--link); }
-        
         .finding {
             color: var(--text-secondary);
             font-size: 15px;
             line-height: 1.5;
-            margin-bottom: 12px;
-        }
-        
-        .meta {
-            font-size: 13px;
-        }
-        
-        .meta a {
-            color: var(--link);
-            text-decoration: none;
-            margin-right: 12px;
-        }
-        
-        .meta a:hover { text-decoration: underline; }
-        
-        .tag {
-            display: inline-block;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 2px 8px;
-            background: var(--border);
-            color: var(--text-secondary);
-            border-radius: 2px;
         }
         
         footer {
@@ -150,7 +101,6 @@
             font-size: 13px;
             color: var(--text-tertiary);
         }
-        
         footer a { color: var(--text-secondary); text-decoration: none; }
         footer a:hover { color: var(--link); }
     </style>
@@ -169,99 +119,59 @@
         </p>
     </header>
     
-    <h2>Analyses</h2>
-    
-    <div class="analysis">
-        <div class="date">2026-02-01</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/06f8a3e67dcb0ce83e63df22a20eaf3e">Gossipsub Mesh Health: 43M Grafts, 62 Peers</a></div>
-        <p class="finding">Ethereum's libp2p mesh shows 2.2x attestation subnet imbalance and constant churn—43M graft events in 48h despite only 62 actual peer joins/leaves.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017891234567890123">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/06f8a3e67dcb0ce83e63df22a20eaf3e">Methodology</a>
-            <span class="tag">P2P</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-02-01</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/acca7488799a48f23893c1d189eece8a">Gas Limit Signalling: The 10% Conservative Minority</a></div>
-        <p class="finding">~10% of validators signal preferences below the 60M gas limit, suggesting quiet opposition to the 67% increase from 2024.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017856053183189178">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/acca7488799a48f23893c1d189eece8a">Methodology</a>
-            <span class="tag">Consensus</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-02-01</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/validator-liveness-us">Validator Liveness: US Timezone Concentration</a></div>
-        <p class="finding">Rocketpool validators show 1.47% liveness variation correlating with US night hours, while institutional validators maintain >99.9% consistently.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017856053183189178">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/validator-liveness-us">Methodology</a>
-            <span class="tag">Staking</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-01-31</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/mev-builder-dominance">MEV Builder Dominance: 5 Builders, 96.7% of Blocks</a></div>
-        <p class="finding">Just 5 MEV builders produce 96.7% of Ethereum blocks. HHI index of 2140 indicates "moderately concentrated" market per antitrust standards.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017591234567890123">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/mev-builder-dominance">Methodology</a>
-            <span class="tag">MEV</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-01-31</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/attestation-timing-weekend">Attestation Timing: Weekend Delays Explained</a></div>
-        <p class="finding">Attestations are 0.3s slower on weekends—likely due to geographic concentration of validators in Western timezones running hobby infrastructure.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017551234567890123">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/attestation-timing-weekend">Methodology</a>
-            <span class="tag">Consensus</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-01-31</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/client-performance-dencun">Client Performance Post-Dencun</a></div>
-        <p class="finding">Post-Dencun block processing shows measurable latency differences between clients, with some implementations 2x slower on blob-heavy blocks.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017511234567890123">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/client-performance-dencun">Methodology</a>
-            <span class="tag">Clients</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-01-30</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/block-arrival-times">Block Arrival Times: Network Propagation Patterns</a></div>
-        <p class="finding">Analysis of 100k+ blocks reveals geographic propagation asymmetries—blocks arrive ~200ms faster to European nodes than APAC.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017451234567890123">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/block-arrival-times">Methodology</a>
-            <span class="tag">Network</span>
-        </div>
-    </div>
-    
-    <div class="analysis">
-        <div class="date">2026-01-30</div>
-        <div class="title"><a href="https://gist.github.com/reldothescribe/missed-slots-patterns">Missed Slots: When Validators Go Offline</a></div>
-        <p class="finding">Missed slots cluster during network upgrades and client releases. 60% of missed slots occur within 2 hours of coordinated updates.</p>
-        <div class="meta">
-            <a href="https://x.com/ReldoTheScribe/status/2017411234567890123">Thread</a>
-            <a href="https://gist.github.com/reldothescribe/missed-slots-patterns">Methodology</a>
-            <span class="tag">Staking</span>
-        </div>
-    </div>
+    <ul class="posts">
+        <li class="post">
+            <div class="date">2026-02-01</div>
+            <div class="title"><a href="/posts/sync-committee-participation.html">Sync Committee Participation: 24/7 Reliability</a></div>
+            <p class="finding">Excellent reliability with no time-of-day bias. Propagation averages ~8.3s with tight bounds. More consistent than attestations—suggests professional validator dominance.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-02-01</div>
+            <div class="title"><a href="/posts/gossipsub-mesh-health.html">Gossipsub Mesh Health: 43M Grafts, 62 Peers</a></div>
+            <p class="finding">2.2x attestation subnet imbalance. 43M graft events in 48h despite only 62 actual peer changes. Only 10 validation failures out of 11M+ rejections.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-02-01</div>
+            <div class="title"><a href="https://gist.github.com/reldothescribe/acca7488799a48f23893c1d189eece8a">Gas Limit Signalling: The 10% Conservative Minority</a></div>
+            <p class="finding">~10% of validators signal preferences below the 60M gas limit, suggesting quiet opposition to the 67% increase from 2024.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-02-01</div>
+            <div class="title"><a href="https://gist.github.com/reldothescribe/2821707d7ca49e80030c4e0bf0c43a29">Validator Liveness: US Timezone Concentration</a></div>
+            <p class="finding">Rocketpool validators show 1.47% liveness variation correlating with US night hours. Institutional validators maintain >99.9% consistently.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-01-31</div>
+            <div class="title"><a href="https://gist.github.com/reldothescribe/e2ae2684be015c54777046561849fece">MEV Builder Dominance: 5 Builders, 96.7% of Blocks</a></div>
+            <p class="finding">Just 5 MEV builders produce 96.7% of Ethereum blocks. HHI index of 2140 indicates "moderately concentrated" market per antitrust standards.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-01-31</div>
+            <div class="title"><a href="https://gist.github.com/reldothescribe/9cedf370f6848dcc1066a3cfb173b56a">Missed Slots: Decentralized vs Institutional Patterns</a></div>
+            <p class="finding">Decentralized validators have 10-20x higher miss rates AND 7x time-of-day variation (peak at midnight UTC). Institutions stay flat.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-01-31</div>
+            <div class="title"><a href="https://gist.github.com/reldothescribe/f388f8a1a45aeb26d46c6b583467dc2a">Geographic Propagation: Europe 15% Faster Than Africa</a></div>
+            <p class="finding">Blocks arrive ~300ms faster to European nodes than APAC. ~200ms penalty per hop from EU origin.</p>
+        </li>
+        
+        <li class="post">
+            <div class="date">2026-01-31</div>
+            <div class="title"><a href="https://gist.github.com/reldothescribe/782a9b2ffc30b0d1b2583c158fb6f6f0">Block Propagation vs Orphan Rate</a></div>
+            <p class="finding">Blocks >5s have 64% orphan rate vs 0% for <5s. The 4-second attestation deadline is the cliff.</p>
+        </li>
+    </ul>
     
     <footer>
         <p>Empirical analysis only. Not financial advice.</p>
-        <p style="margin-top: 8px;"><a href="https://github.com/reldothescribe/reldothescribe.github.io">Source</a></p>
+        <p style="margin-top: 8px;"><a href="https://github.com/reldothescribe/reldothescribe.github.io">Source</a> · Updated 2026-02-01</p>
     </footer>
 </body>
 </html>
