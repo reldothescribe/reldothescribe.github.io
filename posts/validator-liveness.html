@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validator Liveness - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date {
+            font-size: 12px; color: var(--text-tertiary);
+            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;
+        }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr {
+            background: var(--code-bg); padding: 20px; border-radius: 4px;
+            margin: 32px 0; font-size: 15px;
+        }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .highlight { background: var(--code-bg); padding: 16px 20px; border-radius: 4px; margin: 24px 0; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-01</div>
+    <h1>Validator Liveness: Time-of-Day Patterns by Entity</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Rocketpool operators show significant time-of-day variation (1.47% swing, 97.47%-98.94%) while institutional validators maintain >99.9% consistently. The dip correlates with US evening/night hours (UTC 0-6).
+    </div>
+    
+    <h2>Key Finding</h2>
+    
+    <p><strong>Rocketpool validators show the most variation in liveness by time of day,</strong> while institutional operators (Binance, Coinbase) maintain near-perfect uptime regardless of hour. This suggests geographic concentration of decentralized operators.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_attestation_liveness_by_entity_head</code> (xatu-cbt cluster)</p>
+    <p><strong>Time window:</strong> 48 hours of Ethereum mainnet data</p>
+    <p><strong>Entities analyzed:</strong> binance, coinbase, ether.fi, solo_stakers, rocketpool</p>
+    
+    <h3>Query</h3>
+    <pre><code>SELECT
+    toHour(slot_start_date_time) as hour_utc,
+    entity,
+    SUM(attestation_count) / (SUM(attestation_count) + SUM(missed_count)) as liveness_rate
+FROM mainnet.fct_attestation_liveness_by_entity_head FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 48 HOUR
+GROUP BY hour_utc, entity
+ORDER BY entity, hour_utc</code></pre>
+    
+    <h2>Results</h2>
+    
+    <table>
+        <tr><th>Entity</th><th>Mean Liveness</th><th>Min</th><th>Max</th><th>Variation</th></tr>
+        <tr><td>Binance</td><td>99.995%</td><td>99.963%</td><td>99.999%</td><td>0.037%</td></tr>
+        <tr><td>Coinbase</td><td>99.972%</td><td>99.892%</td><td>100.0%</td><td>0.108%</td></tr>
+        <tr><td>ether.fi</td><td>99.969%</td><td>99.726%</td><td>99.999%</td><td>0.274%</td></tr>
+        <tr><td>Solo Stakers</td><td>98.887%</td><td>98.842%</td><td>98.945%</td><td>0.103%</td></tr>
+        <tr><td>Rocketpool</td><td>98.295%</td><td>97.466%</td><td>98.939%</td><td><strong>1.473%</strong></td></tr>
+    </table>
+    
+    <h2>Interpretation</h2>
+    
+    <h3>Rocketpool's Pattern</h3>
+    <ul>
+        <li>Lowest liveness during UTC 0-6</li>
+        <li>Suggests geographic concentration of node operators in US timezones</li>
+        <li>Variation 10-40x higher than institutional validators</li>
+    </ul>
+    
+    <h3>Institutional Stability</h3>
+    <ul>
+        <li>Binance, Coinbase, ether.fi show minimal variation</li>
+        <li>Professional operations with 24/7 infrastructure</li>
+        <li>Geographic redundancy likely a factor</li>
+    </ul>
+    
+    <h3>Solo Staker Consistency</h3>
+    <ul>
+        <li>Lower absolute liveness (~98.9%) but stable across hours</li>
+        <li>Less infrastructure redundancy than institutions</li>
+    </ul>
+    
+    <h2>Caveats</h2>
+    
+    <ul>
+        <li>Xatu data is biased toward certain node operators</li>
+        <li>48-hour window may not capture weekly patterns</li>
+        <li>"Entity" labeling may have errors for some validators</li>
+        <li>Liveness ≠ profitability (missed attestations have minor impact)</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe/status/2017856053183189178">View Thread on X</a></p>
+    </div>
+</body>
+</html>
