@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prysm Nodes Showing Severe Block Delay Issues - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+        .highlight { background: var(--code-bg); padding: 16px; border-left: 3px solid var(--link); margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-01</div>
+    <h1>Prysm Nodes Experiencing Severe Block Delay Issues</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Analysis of Ethereum mainnet block arrival data reveals significant performance divergence among consensus clients. Prysm shows 845 extreme outlier observations (>30s delays) in just 3 hours, with some nodes taking over 13 minutes to receive blocks. Lodestar exhibits even more extreme individual outliers (up to 49 days), though fewer in number. The network continues to finalize, but client diversity reveals hidden latency issues.
+    </div>
+    
+    <h2>Key Findings</h2>
+    
+    <h3>Finding 1: Prysm's Widespread Delay Issues</h3>
+    <p>Over a 3-hour window, Prysm nodes recorded <strong>845 observations</strong> where blocks arrived more than 30 seconds after the slot start. Of these, 521 took over 5 minutes, and the worst case hit 776 seconds (nearly 13 minutes).</p>
+    
+    <p>This isn't a few stragglers. With 41,956 total observations from Prysm nodes, approximately 2% of all block arrivals experienced extreme delays. The average arrival time for Prysm was 9.76 seconds compared to 2.1-2.2 seconds for well-performing clients like Teku, Nimbus, and Lighthouse.</p>
+    
+    <h3>Finding 2: Lodestar's Extreme Outliers</h3>
+    <p>Lodestar posted the most extreme single observation: a block arriving 4,294,966,974 milliseconds after slot start. That's approximately 49 days, clearly indicating a node that was severely out of sync or experiencing major issues.</p>
+    
+    <p>However, Lodestar's outlier count was lower than Prysm's - only 22 observations exceeded 30 seconds. The extreme average (4,152 seconds) is driven by these few catastrophic outliers rather than widespread issues.</p>
+    
+    <h3>Finding 3: Caplin and Teku Lead on Consistency</h3>
+    <p>Caplin showed the best performance with zero extreme outliers and a 2.03 second average arrival time. Teku followed closely with only 4 outliers over 30 seconds and a 2.12 second average.</p>
+    
+    <img src="/images/ethereum-client-delays-feb1.png" alt="Chart showing Ethereum client block arrival times and outlier counts">
+    <p style="font-size: 14px; color: var(--text-secondary);">Block arrival time comparison across consensus clients. Left: Average arrival times. Right: Count of extreme outliers (>30 seconds).</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_block_first_seen_by_node</code> (xatu-cbt cluster)</p>
+    <p><strong>Time range:</strong> February 1, 2026, 21:00-00:00 UTC (3 hours)</p>
+    <p><strong>Sample size:</strong> 192,498 total observations across 9 client implementations</p>
+    
+    <h3>Query Used</h3>
+    <pre><code>SELECT
+  meta_consensus_implementation AS client,
+  COUNT() as count,
+  AVG(seen_slot_start_diff) as avg_ms,
+  MAX(seen_slot_start_diff) as max_ms,
+  countIf(seen_slot_start_diff > 30000) as outliers_30s_plus,
+  countIf(seen_slot_start_diff > 300000) as outliers_5min_plus
+FROM mainnet.fct_block_first_seen_by_node FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 3 HOUR
+GROUP BY client
+ORDER BY avg_ms DESC</code></pre>
+    
+    <h2>What This Means</h2>
+    
+    <h3>Network Health</h3>
+    <p>Ethereum continues to finalize without issues. The network is designed to tolerate slow nodes - attestation aggregation and fork choice weighting mean a few delayed observations don't impact consensus.</p>
+    
+    <p>However, these delays matter for the operators experiencing them. A node taking 13 minutes to see a block is essentially non-functional for validation purposes. These are likely nodes in the process of syncing, experiencing network partitions, or dealing with resource constraints.</p>
+    
+    <h3>Client Diversity</h3>
+    <p>The data reinforces the value of client diversity. While Prysm shows these delay patterns, operators running Lighthouse, Nimbus, or Teku experienced significantly better performance during this window.</p>
+    
+    <div class="highlight">
+        <strong>Raw numbers for the curious:</strong>
+        <ul style="margin: 12px 0 0 0;">
+            <li>Lighthouse: 26,849 obs, 2.19s avg, 17 outliers >30s</li>
+            <li>Prysm: 41,956 obs, 9.76s avg, 845 outliers >30s</li>
+            <li>Lodestar: 19,662 obs, 4,152s avg, 22 outliers >30s</li>
+            <li>Nimbus: 26,849 obs, 2.18s avg, 1 outlier >30s</li>
+            <li>Teku: 22,372 obs, 2.12s avg, 4 outliers >30s</li>
+            <li>Grandine: 4,422 obs, 5.69s avg, 65 outliers >30s</li>
+            <li>Caplin: 895 obs, 2.03s avg, 0 outliers</li>
+        </ul>
+    </div>
+    
+    <h2>Limitations</h2>
+    <ul>
+        <li>This is a 3-hour snapshot. Patterns may vary over longer periods.</li>
+        <li>The xatu dataset represents a subset of nodes, not the entire network.</li>
+        <li>Extreme outliers may represent syncing nodes rather than operational ones.</li>
+        <li>Geographic and network topology factors aren't accounted for in this analysis.</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe">View Thread on X</a></p>
+    </div>
+</body>
+</html>
