@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missed Slots Analysis - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999; --border: #eee; --link: #0066cc; --code-bg: #f5f5f5; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888; --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a; } }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Serif 4', Georgia, serif; font-size: 16px; line-height: 1.7; color: var(--text); background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px; }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-01-31</div>
+    <h1>Missed Slots: Decentralized vs Institutional Validators</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Decentralized validators (solo stakers, Rocket Pool) have 10-20x higher miss rates than institutional operators. They also show 7x time-of-day variation, peaking at midnight UTC when European home stakers are asleep.
+    </div>
+    
+    <h2>The Question</h2>
+    
+    <p>Do decentralized validators have different block proposal miss rates compared to institutional operators?</p>
+    
+    <h2>Data Source</h2>
+    
+    <ul>
+        <li><strong>Tables:</strong> <code>mainnet.fct_block_proposer_entity</code>, <code>mainnet.fct_block_head</code></li>
+        <li><strong>Time Period:</strong> 7 days (Jan 24-31, 2026)</li>
+        <li><strong>Network:</strong> Ethereum mainnet</li>
+    </ul>
+    
+    <h2>Entity-Level Miss Rates (7 days)</h2>
+    
+    <table>
+        <tr><th>Entity</th><th>Scheduled</th><th>Missed</th><th>Miss Rate</th></tr>
+        <tr><td>solo_stakers</td><td>4,016</td><td>46</td><td>1.15%</td></tr>
+        <tr><td>rocketpool</td><td>731</td><td>16</td><td>2.19%</td></tr>
+        <tr><td>liquid_collective</td><td>383</td><td>9</td><td>2.35%</td></tr>
+        <tr><td>bloxstaking</td><td>84</td><td>2</td><td>2.38%</td></tr>
+        <tr><td>dappnode</td><td>105</td><td>2</td><td>1.91%</td></tr>
+        <tr><td>ether.fi</td><td>2,960</td><td>5</td><td>0.17%</td></tr>
+        <tr><td>binance</td><td>3,859</td><td>3</td><td>0.08%</td></tr>
+        <tr><td>kraken</td><td>1,456</td><td>1</td><td>0.07%</td></tr>
+        <tr><td>figment</td><td>1,706</td><td>1</td><td>0.06%</td></tr>
+    </table>
+    
+    <h2>Time-of-Day Variation</h2>
+    
+    <h3>Decentralized Operators</h3>
+    <ul>
+        <li>Miss rate varies from 0.44% (7:00 UTC) to 3.06% (0:00 UTC)</li>
+        <li>~7x variation throughout the day</li>
+        <li>Peak misses at midnight UTC (1am Western Europe)</li>
+    </ul>
+    
+    <h3>Institutional Operators</h3>
+    <ul>
+        <li>Miss rate stays between 0.00% and 0.27%</li>
+        <li>Essentially flat throughout the day</li>
+    </ul>
+    
+    <h2>Interpretation</h2>
+    
+    <ul>
+        <li><strong>Infrastructure gap:</strong> Decentralized validators run on consumer hardware with less redundancy, leading to 10-20x higher miss rates</li>
+        <li><strong>Time-of-day pattern:</strong> The midnight UTC peak suggests issues occurring when European home stakers are asleep and can't respond to node problems</li>
+        <li><strong>Network health:</strong> Despite the gap, overall network miss rate is only 0.24%, indicating a healthy network</li>
+    </ul>
+    
+    <h2>Methodology</h2>
+    
+    <pre><code>WITH scheduled AS (
+    SELECT entity, COUNT() AS scheduled_blocks
+    FROM mainnet.fct_block_proposer_entity FINAL
+    WHERE slot_start_date_time >= now() - INTERVAL 7 DAY
+    GROUP BY entity
+),
+proposed AS (
+    SELECT e.entity, COUNT() AS proposed_blocks
+    FROM mainnet.fct_block_proposer_entity e FINAL
+    INNER JOIN mainnet.fct_block_head b FINAL ON e.slot = b.slot
+    WHERE e.slot_start_date_time >= now() - INTERVAL 7 DAY
+    GROUP BY e.entity
+)
+SELECT s.entity, s.scheduled_blocks, COALESCE(p.proposed_blocks, 0) AS proposed_blocks,
+    s.scheduled_blocks - COALESCE(p.proposed_blocks, 0) AS missed_blocks,
+    round((s.scheduled_blocks - COALESCE(p.proposed_blocks, 0)) * 100.0 / s.scheduled_blocks, 3) AS miss_rate_pct
+FROM scheduled s LEFT JOIN proposed p ON s.entity = p.entity
+WHERE s.scheduled_blocks >= 50
+ORDER BY missed_blocks DESC</code></pre>
+    
+    <h2>Caveats</h2>
+    
+    
+    <ul>
+        <li>Entity labeling may not be complete—some validators are unlabeled</li>
+        <li>"Miss" means a scheduled proposer didn't produce a canonical block—could be genuinely offline OR orphaned</li>
+        <li>7-day window is relatively short; longer analysis would reduce noise</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe/status/2017411234567890123">View Thread on X</a></p>
+    </div>
+</body>
+</html>

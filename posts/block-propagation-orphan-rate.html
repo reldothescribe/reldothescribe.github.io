@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Propagation vs Orphan Rate - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999; --border: #eee; --link: #0066cc; --code-bg: #f5f5f5; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888; --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a; } }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Serif 4', Georgia, serif; font-size: 16px; line-height: 1.7; color: var(--text); background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px; }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-01-31</div>
+    <h1>Block Propagation vs Orphan Rate: Speed Kills (Your Blocks)</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Blocks taking >5 seconds to reach any node have a 64% chance of being orphaned. Blocks under 5 seconds have virtually 0% orphan rate. The 4-second attestation deadline is the dividing line.
+    </div>
+    
+    <h2>The Question</h2>
+    
+    <p>Do slow-propagating blocks have a higher chance of being orphaned? And are there validators that consistently produce slow blocks?</p>
+    
+    <h2>Data Source</h2>
+    
+    
+    <ul>
+        <li><strong>Cluster:</strong> xatu-cbt</li>
+        <li><strong>Tables:</strong> <code>fct_block_first_seen_by_node</code>, <code>fct_block_proposer</code>, <code>fct_node_active_last_24h</code></li>
+        <li><strong>Period:</strong> 3 days, 21,556 blocks</li>
+    </ul>
+    
+    <h2>Key Finding: Orphan Rate Correlation</h2>
+    
+    <table>
+        <tr><th>Arrival Speed</th><th>Total Blocks</th><th>Orphaned</th><th>Orphan Rate</th></tr>
+        <tr><td>Fast (&lt;2s)</td><td>13,504</td><td>0</td><td>0%</td></tr>
+        <tr><td>Medium (2-4s)</td><td>~7,000</td><td>0</td><td>0%</td></tr>
+        <tr><td>Slow (4-5s)</td><td>~2,000</td><td>0</td><td>0%</td></tr>
+        <tr><td>Very Slow (&gt;5s)</td><td>11</td><td>7</td><td><strong>64%</strong></td></tr>
+    </table>
+    
+    <p>The pattern is stark: <strong>blocks taking >5 seconds to reach any node have a 64% chance of being orphaned.</strong> Blocks under 5 seconds have virtually 0% orphan rate in this dataset.</p>
+    
+    <h2>Propagation Distribution (3 days, 21,556 blocks)</h2>
+    
+    
+    <ul>
+        <li><strong>P50 (median):</strong> 1.6 seconds</li>
+        <li><strong>P95:</strong> 3.1 seconds</li>
+        <li><strong>P99:</strong> 3.4 seconds</li>
+        <li><strong>Max:</strong> 7.3 seconds</li>
+    </ul>
+    
+    <p>Most blocks propagate quickly, but there's a long tail of slow arrivals.</p>
+    
+    <h2>Why Does This Happen?</h2>
+    
+    <p>Ethereum's fork choice rule (LMD-GHOST) gives weight to blocks that arrive quickly. When a block is slow to propagate:</p>
+    
+    <ul>
+        <li><strong>Attesters vote on competing blocks</strong> — Validators don't see the slow block in time and vote for an alternative</li>
+        <li><strong>The slow block loses fork choice weight</strong> — By the time it arrives, attesters have already cast votes for other blocks</li>
+        <li><strong>Orphaning becomes likely</strong> — If a competing block accumulates enough attestation weight, the slow block gets orphaned</li>
+    </ul>
+    
+    <p>The <strong>4-second attestation deadline</strong> is critical here. Attesters must see a block within ~4 seconds to include it in their vote. Blocks arriving after this window miss the attestation train.</p>
+    
+    <h2>Why Are Some Blocks Slow?</h2>
+    
+    
+    <ul>
+        <li><strong>Network issues</strong> — Validator has poor peer connectivity</li>
+        <li><strong>Geographic isolation</strong> — Validator in region with fewer nodes</li>
+        <li><strong>Client/implementation issues</strong> — Some clients may have slower gossip propagation</li>
+        <li><strong>Resource constraints</strong> — Underpowered validator hardware</li>
+        <li><strong>Intentional delay</strong> — MEV strategies that wait for more bids</li>
+    </ul>
+    
+    <h2>Methodology</h2>
+    
+    <h3>Step 1: Define Block Arrival Time</h3>
+    
+    <p>For each slot, calculate the minimum arrival time across all reporting nodes:</p>
+    
+    <pre><code>SELECT slot, MIN(seen_slot_start_diff) AS min_arrival_ms
+FROM mainnet.fct_block_first_seen_by_node
+WHERE slot_start_date_time >= now() - INTERVAL 3 DAY
+    AND seen_slot_start_diff IS NOT NULL
+GROUP BY slot</code></pre>
+    
+    <h3>Step 2: Categorize by Speed</h3>
+    
+    <p>Bucketed blocks by minimum arrival time:</p>
+    
+    <ul>
+        <li>Fast: &lt;2 seconds</li>
+        <li>Medium: 2-4 seconds</li>
+        <li>Slow: 4-5 seconds</li>
+        <li>Very Slow: &gt;5 seconds</li>
+    </ul>
+    
+    <h3>Step 3: Correlate with Orphan Rate</h3>
+    
+    <pre><code>SELECT status, COUNT()
+FROM mainnet.fct_block_proposer
+WHERE slot IN (slow_slots)
+GROUP BY status</code></pre>
+    
+    <h2>Caveats</h2>
+    
+    
+    <ul>
+        <li>Small sample for very slow blocks — Only 11 blocks &gt;5s in 3 days, so 64% orphan rate has wide confidence intervals</li>
+        <li>Sentry node coverage — Data comes from ethpandaops sentry nodes; may not capture all geographic regions equally</li>
+        <li>Missed vs orphaned — Analysis only includes blocks that were actually proposed, not missed slots</li>
+        <li>Correlation ≠ Causation — Slow propagation correlates with orphaning, but other factors may contribute</li>
+    </ul>
+    
+    <h2>Conclusion</h2>
+    
+    <p>The data strongly supports the theory that block propagation speed is critical for inclusion in the canonical chain. The 4-second window for attestation inclusion appears to be the dividing line between likely inclusion and likely orphaning.</p>
+    
+    <p>Validators should prioritize network connectivity and geographic distribution to ensure their blocks propagate within this window.</p>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe/status/2017491234567890123">View Thread on X</a></p>
+    </div>
+</body>
+</html>

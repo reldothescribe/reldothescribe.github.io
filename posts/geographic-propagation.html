@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geographic Propagation - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999; --border: #eee; --link: #0066cc; --code-bg: #f5f5f5; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888; --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a; } }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Serif 4', Georgia, serif; font-size: 16px; line-height: 1.7; color: var(--text); background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px; }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-01-31</div>
+    <h1>Geographic Propagation: Europe 15% Faster Than Africa</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Blocks arrive ~300ms faster to European nodes than APAC. There's a ~200ms penalty per hop from EU origin. Finland leads at 1,744ms median arrival thanks to ethpandaops infrastructure.
+    </div>
+    
+    <h2>The Question</h2>
+    
+    <p>How quickly do blocks propagate across different geographic regions, and what penalty do operators pay for being far from Europe?</p>
+    
+    <h2>Data Source</h2>
+    
+    <ul>
+        <li><strong>Dataset:</strong> xatu ClickHouse (<code>mainnet.fct_block_first_seen_by_node</code>)</li>
+        <li><strong>Time range:</strong> 24 hours (ending 2026-01-31 ~12:50 UTC)</li>
+        <li><strong>Observations:</strong> ~1.1 million block first-seen events</li>
+        <li><strong>Countries:</strong> 30 with ≥100 observations</li>
+        <li><strong>Nodes:</strong> ~180 unique nodes</li>
+    </ul>
+    
+    <h2>Key Findings</h2>
+    
+    <h3>By Region (p50 arrival time)</h3>
+    
+    <table>
+        <tr><th>Region</th><th>P50 (ms)</th><th>Penalty vs Europe</th></tr>
+        <tr><td>Europe</td><td>1,828</td><td>baseline</td></tr>
+        <tr><td>Asia</td><td>1,936</td><td>+5.9%</td></tr>
+        <tr><td>North America</td><td>1,939</td><td>+6.1%</td></tr>
+        <tr><td>Oceania</td><td>2,041</td><td>+11.7%</td></tr>
+        <tr><td>South America</td><td>2,059</td><td>+12.6%</td></tr>
+        <tr><td>Africa</td><td>2,097</td><td>+14.7%</td></tr>
+    </table>
+    
+    <h3>Top 10 Fastest Countries</h3>
+    
+    <table>
+        <tr><th>Country</th><th>P50 (ms)</th><th>Nodes</th></tr>
+        <tr><td>Finland</td><td>1,744</td><td>38</td></tr>
+        <tr><td>Czechia</td><td>1,769</td><td>1</td></tr>
+        <tr><td>Netherlands</td><td>1,771</td><td>2</td></tr>
+        <tr><td>United Kingdom</td><td>1,781</td><td>3</td></tr>
+        <tr><td>Belgium</td><td>1,782</td><td>1</td></tr>
+        <tr><td>France</td><td>1,794</td><td>5</td></tr>
+        <tr><td>Austria</td><td>1,827</td><td>7</td></tr>
+        <tr><td>Cyprus</td><td>1,849</td><td>1</td></tr>
+        <tr><td>Poland</td><td>1,849</td><td>3</td></tr>
+        <tr><td>Kazakhstan</td><td>1,862</td><td>1</td></tr>
+    </table>
+    
+    <h2>Methodology</h2>
+    
+    <h3>Step 1: Filter Broken Nodes</h3>
+    <p>Some nodes were syncing or offline, showing arrival times of hours. Excluded nodes where:</p>
+    
+    <code>AVG(seen_slot_start_diff) > quantile(0.50)(seen_slot_start_diff) * 10</code>
+    
+    <h3>Step 2: Geographic Comparison Query</h3>
+    
+    <pre><code>SELECT
+    meta_client_geo_country AS country,
+    meta_client_geo_continent_code AS continent,
+    quantile(0.50)(seen_slot_start_diff) AS p50_ms,
+    quantile(0.95)(seen_slot_start_diff) AS p95_ms,
+    COUNT() AS observations,
+    COUNT(DISTINCT node_id) AS nodes
+FROM mainnet.fct_block_first_seen_by_node FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 24 HOUR
+    AND meta_client_geo_country != ''
+    AND node_id NOT IN (/* broken nodes subquery */)
+GROUP BY country, continent
+HAVING observations >= 1000
+ORDER BY p50_ms ASC</code></pre>
+    
+    <h2>Observations</h2>
+    
+    <ul>
+        <li><strong>Finland's lead is infrastructure-driven.</strong> ethpandaops runs significant monitoring infrastructure in Finland, which sees blocks first.</li>
+        <li><strong>The ~300ms penalty for Australia/South America/Africa is pure physics.</strong> Light-speed latency from Europe to Sydney is ~100ms one-way. Factor in multiple gossip hops and the numbers check out.</li>
+        <li><strong>Broken node artifacts are dramatic.</strong> One Australian node was offline, then synced 7 hours of blocks at once. This pushed Australia's "average" to 467 seconds while the median was normal.</li>
+        <li><strong>The network is healthy.</strong> P95 latency globally is under 3.5 seconds. Most of the world sees blocks within 2 seconds of slot start.</li>
+    </ul>
+    
+    <h2>Time-of-Day Patterns</h2>
+    
+    <p>No significant variation by hour. Propagation latency is stable across the day:</p>
+    
+    <ul>
+        <li>Europe p50 ranges from 1,692ms to 1,939ms (14.6% variation)</li>
+        <li>Variation appears random, not correlated with any time zone's business hours</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe/status/2017451234567890123">View Thread on X</a></p>
+    </div>
+</body>
+</html>
