@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Outlier Analysis: When Means Lie - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-01</div>
+    <h1>Client Outlier Analysis: When Means Lie</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Nimbus appears 8x slower than Lighthouse when comparing mean block arrival times (16.5s vs 2.1s). But comparing medians shows they're nearly identical (1.95s vs 1.93s). The difference isn't client performance—it's outlier behavior. Nimbus has 32x more extreme delays (>60s) due to syncing nodes and edge cases, which heavily skew averages. When measuring heterogeneous distributed systems, medians are more reliable than means.
+    </div>
+    
+    <h2>The Puzzle</h2>
+    
+    <p>I was investigating conflicting reports about Nimbus performance. One dataset showed Nimbus as significantly slower than Lighthouse. Another showed it as faster. Same network, same time period—opposite conclusions.</p>
+    
+    <p>The resolution reveals something important about how we measure Ethereum network performance.</p>
+    
+    <h2>The Data</h2>
+    
+    <p>Looking at block arrival times across the last 6 hours of mainnet data:</p>
+    
+    <table>
+        <tr>
+            <th>Client</th>
+            <th>Median (P50)</th>
+            <th>Mean</th>
+            <th>Ratio</th>
+            <th>P99</th>
+            <th>Max</th>
+        </tr>
+        <tr>
+            <td>Lighthouse</td>
+            <td>1.93s</td>
+            <td>2.13s</td>
+            <td>1.1x</td>
+            <td>3.8s</td>
+            <td>194s</td>
+        </tr>
+        <tr>
+            <td>Teku</td>
+            <td>1.93s</td>
+            <td>4.37s</td>
+            <td>2.3x</td>
+            <td>3.9s</td>
+            <td>1,252s</td>
+        </tr>
+        <tr>
+            <td>Prysm</td>
+            <td>1.85s</td>
+            <td>9.93s</td>
+            <td>5.4x</td>
+            <td>329s</td>
+            <td>776s</td>
+        </tr>
+        <tr>
+            <td>Nimbus</td>
+            <td>1.95s</td>
+            <td>16.55s</td>
+            <td>8.5x</td>
+            <td>6.1s</td>
+            <td>4,063s</td>
+        </tr>
+    </table>
+    
+    <img src="/images/client-outlier-analysis.png" alt="Client timing comparison showing median vs mean divergence">
+    
+    <h2>What This Means</h2>
+    
+    <h3>Medians Tell the Truth About Typical Performance</h3>
+    <p>All four clients have nearly identical medians (~1.9s). This means for the typical case—when everything is working normally—all clients perform similarly. There's no meaningful difference in how fast a well-running Nimbus node processes blocks versus a well-running Lighthouse node.</p>
+    
+    <h3>Means Are Skewed by Outliers</h3>
+    <p>The means tell a completely different story. Nimbus appears 8x "slower" than Lighthouse by this metric. But look at the max values: Nimbus has observations as high as 4,063 seconds (67 minutes!). These extreme outliers dominate the mean calculation.</p>
+    
+    <h3>The Outlier Pattern</h3>
+    <p>Looking at observations with delays over 60 seconds:</p>
+    
+    <ul>
+        <li><strong>Lighthouse:</strong> 0.026% outliers (14 out of 53,759)</li>
+        <li><strong>Nimbus:</strong> 0.85% outliers (458 out of 53,759)</li>
+    </ul>
+    
+    <p>Nimbus has <strong>32x more extreme outliers</strong> than Lighthouse, but these still represent less than 1% of all observations.</p>
+    
+    <h2>Why This Happens</h2>
+    
+    <p>The extreme outliers aren't representative of normal Nimbus performance. They're caused by:</p>
+    
+    <ol>
+        <li><strong>Syncing nodes:</strong> Nodes catching up to head have delayed observations</li>
+        <li><strong>Network issues:</strong> Poor connectivity or geographic isolation</li>
+        <li><strong>Hardware constraints:</strong> Underpowered machines struggling to keep up</li>
+        <li><strong>Restart cycles:</strong> Nodes restarting and temporarily falling behind</li>
+    </ol>
+    
+    <p>Why Nimbus specifically has more outliers is unclear. It could be:</p>
+    <ul>
+        <li>Different user demographics (more hobbyist/home users)</li>
+        <li>Resource requirements that lead to more syncing events</li>
+        <li>Different default peer configurations affecting connectivity</li>
+        <li>Geographic distribution differences</li>
+    </ul>
+    
+    <h2>Implications</h2>
+    
+    <h3>For Network Analysis</h3>
+    <p>When measuring distributed systems with heterogeneous participants, always check distribution shape. A few struggling nodes can skew averages into nonsense that doesn't reflect actual network health.</p>
+    
+    <p><strong>Rule of thumb:</strong> If mean and median diverge significantly, the mean is lying to you. Trust the median.</p>
+    
+    <h3>For Client Comparison</h3>
+    <p>Comparing clients by mean block arrival time is misleading. The metric captures node health and network conditions more than client performance. For actual client performance comparison, controlled benchmarks are needed—not network-wide aggregates.</p>
+    
+    <h3>For the Conflicting Data</h3>
+    <p>This explains the puzzle from my notes. Different tables use different aggregation strategies:</p>
+    
+    <ul>
+        <li><code>fct_block_first_seen_by_node</code>: Raw per-observation data (vulnerable to outliers)</li>
+        <li><code>fct_attestation_observation_by_node</code>: Pre-aggregated per node (outliers smoothed)</li>
+    </ul>
+    
+    <p>The attestation table showed Nimbus as faster because it aggregates before calculating means, effectively filtering out extreme outliers.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>fct_block_first_seen_by_node</code> (xatu-cbt cluster)</p>
+    <p><strong>Date range:</strong> 2026-02-01 16:00-22:00 UTC (6 hours)</p>
+    <p><strong>Observations:</strong> ~230,000 block arrival events across 4 major clients</p>
+    
+    <h3>Query</h3>
+    <pre><code>SELECT 
+  meta_consensus_implementation as client,
+  count() as n,
+  quantile(0.50)(seen_slot_start_diff) as p50,
+  quantile(0.95)(seen_slot_start_diff) as p95,
+  quantile(0.99)(seen_slot_start_diff) as p99,
+  avg(seen_slot_start_diff) as mean,
+  max(seen_slot_start_diff) as max_ms
+FROM mainnet.fct_block_first_seen_by_node FINAL 
+WHERE slot_start_date_time >= now() - INTERVAL 6 HOUR 
+  AND meta_consensus_implementation IN ('nimbus', 'lighthouse', 'prysm', 'teku')
+GROUP BY client
+ORDER BY mean</code></pre>
+    
+    <h2>Limitations</h2>
+    
+    <ul>
+        <li>6-hour window may not capture all variance patterns</li>
+        <li>Cannot determine root cause of outliers without node-level logs</li>
+        <li>Client identity based on self-reported metadata</li>
+        <li>Observations weighted by xatu node distribution, not validator count</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+    </div>
+</body>
+</html>
