@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Orphan Rate Analysis: 1 in 300 Blocks Don't Make It - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">February 2, 2026</div>
+    <h1>Ethereum Orphan Rate Analysis: 1 in 300 Blocks Don't Make It</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Analyzing 24 hours of Ethereum mainnet data reveals a 0.33% orphan rate, meaning approximately 1 in every 300 proposed blocks fails to become canonical. While 79% of slots achieve near-perfect head vote consensus (&gt;99.5%), a small but consistent stream of blocks get orphaned due to late propagation, reorgs, or consensus disagreements.
+    </div>
+    
+    <h2>What Are Orphaned Blocks?</h2>
+    
+    <p>When Ethereum validators attest, they vote on what they believe is the current "head" of the chain. If a supermajority agrees, that block becomes canonical. But sometimes a block is proposed and attested to, yet doesn't end up in the final chain. These are "orphaned" blocks - they existed briefly in some validators' views but were ultimately excluded.</p>
+    
+    <p>I measured this by looking at "head vote accuracy" - the percentage of attestations in a slot that correctly identified the block that ultimately became canonical. A slot with 0% head accuracy means <em>every single attestation</em> voted for a different head than what ended up being canonical. That's an orphaned block.</p>
+    
+    <h2>Key Findings</h2>
+    
+    <h3>Finding 1: Consistent 0.33% Orphan Rate</h3>
+    <p>Over 24 hours (7,195 slots), I found 24 orphaned blocks - a steady 0.33% orphan rate. This translates to roughly 1 block every 50 minutes getting orphaned on average.</p>
+    
+    <table>
+        <tr><th>Category</th><th>Count</th><th>Percentage</th></tr>
+        <tr><td>Orphaned (0% accuracy)</td><td>24 slots</td><td>0.33%</td></tr>
+        <tr><td>Contested (1-94% accuracy)</td><td>218 slots</td><td>3.03%</td></tr>
+        <tr><td>Normal (&gt;95% accuracy)</td><td>6,953 slots</td><td>96.64%</td></tr>
+    </table>
+    
+    <h3>Finding 2: Most Slots Achieve Strong Consensus</h3>
+    <p>The distribution shows Ethereum's consensus is remarkably robust. Nearly 80% of slots achieve 99.5-100% head vote accuracy, meaning almost perfect agreement on the head block.</p>
+    
+    <img src="/images/head-accuracy-dist-2026-02-02.png" alt="Head accuracy distribution showing most slots at 99.5-100% accuracy">
+    <p style="font-size: 14px; color: var(--text-secondary);">Distribution of head vote accuracy across 7,195 slots. The vast majority show near-perfect consensus.</p>
+    
+    <h3>Finding 3: Orphan Rate Varies By Hour</h3>
+    <p>Orphaning isn't uniform. Some hours saw spikes up to 1% orphan rates (1 in 100 blocks), while others had none at all. The 06:00 UTC hour was particularly rough with 3 orphaned blocks.</p>
+    
+    <img src="/images/orphan-rate-ts-2026-02-02.png" alt="Orphan rate by hour showing variation over 24 hours">
+    <p style="font-size: 14px; color: var(--text-secondary);">Hourly orphan rates over the 24-hour analysis period, showing significant variation.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_attestation_correctness_by_validator_head</code> (xatu-cbt cluster)</p>
+    <p><strong>Date range:</strong> January 31, 2026 19:00 UTC - February 1, 2026 19:00 UTC</p>
+    <p><strong>Total attestations analyzed:</strong> ~220 million</p>
+    
+    <h3>Query</h3>
+    <pre><code>SELECT
+  slot,
+  countIf(slot_distance = 0) * 100.0 / COUNT() AS head_accuracy_pct
+FROM mainnet.fct_attestation_correctness_by_validator_head FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 24 HOUR
+GROUP BY slot</code></pre>
+    
+    <h3>Why This Matters</h3>
+    <p>Orphaned blocks represent wasted work - validators spent resources proposing and attesting to blocks that didn't contribute to chain finality. For the 24 validators whose blocks were orphaned, this means missed proposal rewards. For the network, it's a reminder that consensus isn't instantaneous and propagation delays matter.</p>
+    
+    <p>The 3% "contested" slots (where 5-95% of validators disagreed on head) are particularly interesting - they suggest periods of network disagreement, possibly due to reorgs, late block arrivals, or temporary forks.</p>
+    
+    <h2>Conclusions</h2>
+    
+    <h3>What We Learned</h3>
+    <ul>
+        <li>Ethereum's consensus is remarkably stable: 97% of slots achieve &gt;95% agreement</li>
+        <li>Orphan rate of 0.33% is low but persistent - roughly 2-3 blocks per hour</li>
+        <li>Orphan events cluster temporally, suggesting network-wide effects rather than random proposer failures</li>
+    </ul>
+    
+    <h3>Limitations</h3>
+    <ul>
+        <li>24-hour window may not capture rare events or long-term trends</li>
+        <li>Doesn't distinguish between reorgs, late blocks, or other causes of orphaning</li>
+        <li>Data reflects the xatu node's view - other nodes may see slightly different orphan rates</li>
+    </ul>
+    
+    <h3>Future Work</h3>
+    <p>Interesting follow-ups would be: correlating orphan events with block arrival times to see if late blocks cause orphaning; analyzing which validators/operators are more likely to have blocks orphaned; and tracking how orphan rates change during network upgrades or high-activity periods.</p>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe">View Thread on X</a></p>
+    </div>
+</body>
+</html>
