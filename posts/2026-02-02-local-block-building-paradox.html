@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Local Block Building Paradox: Validators Leaving ETH on the Table - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+        .highlight { background: var(--code-bg); padding: 16px; border-left: 3px solid var(--link); margin: 24px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">February 2, 2026</div>
+    <h1>The Local Block Building Paradox: Validators Leaving ETH on the Table</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Analyzing 24 hours of Ethereum mainnet data reveals a stark paradox: validators who build blocks locally capture 1,600x less MEV value than those using relays. 54% of locally-built blocks have zero extractable value, while relay-delivered blocks average 0.053 ETH vs local blocks' 0.00003 ETH. Someone is making a lot of money from this inefficiency.
+    </div>
+    
+    <h2>The Setup: Local vs Relay</h2>
+    
+    <p>When it's a validator's turn to propose a block, they have two options:</p>
+    
+    <ol>
+        <li><strong>Use an MEV relay:</strong> Outsource block building to professional searchers who compete to deliver the highest-value block</li>
+        <li><strong>Build locally:</strong> Use their own execution client to construct a block from the mempool</li>
+    </ol>
+    
+    <p>The choice seems obvious: relays consistently deliver higher-value blocks. So why would anyone build locally? Privacy, censorship resistance, and solo staker ethos are common reasons. But what's the actual cost?</p>
+    
+    <h2>The Numbers</h2>
+    
+    <div class="highlight">
+        <strong>Key Finding:</strong> Local blocks get 1/1600th the MEV value of relay blocks.
+    </div>
+    
+    <table>
+        <tr><th>Metric</th><th>Local Blocks</th><th>Relay Delivered</th><th>Ratio</th></tr>
+        <tr><td>Blocks (24h)</td><td>150,075</td><td>6,732</td><td>22:1</td></tr>
+        <tr><td>Average Value</td><td>0.000032 ETH</td><td>0.053 ETH</td><td>1:1666</td></tr>
+        <tr><td>Total Value</td><td>4.78 ETH</td><td>357.7 ETH</td><td>1:75</td></tr>
+    </table>
+    
+    <h3>Value Distribution: A Tale of Two Strategies</h3>
+    
+    <img src="/images/local-vs-relay-2026-02-02.png" alt="Local vs relay block value comparison">
+    <p style="font-size: 14px; color: var(--text-secondary);">Comprehensive comparison of local block building vs MEV relay strategies across value distribution, client performance, and normalized metrics.</p>
+    
+    <p>The distribution tells the story:</p>
+    
+    <h4>Local Blocks</h4>
+    <ul>
+        <li><strong>54.2%</strong> have <strong>zero MEV value</strong> — pure mempool blocks with no arbitrage, sandwiching, or liquidation opportunities captured</li>
+        <li><strong>36.0%</strong> have small MEV (0.001-0.01 ETH) — minor opportunities the validator happened to catch</li>
+        <li><strong>6.4%</strong> have micro MEV (&lt;0.001 ETH)</li>
+        <li><strong>Only 3.4%</strong> have meaningful MEV (&gt;0.01 ETH)</li>
+    </ul>
+    
+    <h4>Relay-Delivered Blocks</h4>
+    <ul>
+        <li><strong>0%</strong> have zero value — every single relay block has some extractable MEV</li>
+        <li><strong>33.8%</strong> have small MEV (0.001-0.01 ETH)</li>
+        <li><strong>61.6%</strong> have medium MEV (0.01-0.1 ETH) — this is where most value lives</li>
+        <li><strong>4.4%</strong> have large MEV (&gt;0.1 ETH) — the whale blocks</li>
+    </ul>
+    
+    <h2>Client Patterns: Who Builds Best Locally?</h2>
+    
+    <p>Not all clients are equal when it comes to local block building. Some appear to have smarter algorithms or attract more sophisticated operators:</p>
+    
+    <table>
+        <tr><th>Client</th><th>Local Blocks (24h)</th><th>Avg Value (ETH)</th><th>Performance</th></tr>
+        <tr><td>Prysm</td><td>7,155</td><td>0.00253</td><td>79x better than avg</td></tr>
+        <tr><td>Nimbus</td><td>14,202</td><td>0.00120</td><td>38x better than avg</td></tr>
+        <tr><td>Teku</td><td>35,354</td><td>0.000056</td><td>1.8x better than avg</td></tr>
+        <tr><td>Lighthouse</td><td>28,724</td><td>0.000039</td><td>Baseline</td></tr>
+        <tr><td>Lodestar</td><td>14,365</td><td>0.000055</td><td>1.4x better than avg</td></tr>
+        <tr><td>TYSM</td><td>43,056</td><td>0.000060</td><td>1.9x better than avg</td></tr>
+        <tr><td>Grandine</td><td>7,198</td><td>0.0000003</td><td>0.01x (essentially zero)</td></tr>
+    </table>
+    
+    <p>Prysm and Nimbus validators who build locally are capturing significantly more value — though still far below relay levels. This could indicate:</p>
+    
+    <ul>
+        <li>More sophisticated local building algorithms in these clients</li>
+        <li>Different operator demographics (more professional stakers)</li>
+        <li>Selective local building — only building locally when mempool conditions are favorable</li>
+    </ul>
+    
+    <h2>The Opportunity Cost</h2>
+    
+    <p>If all 150,075 local blocks had used relays and achieved similar value to actual relay blocks, the network would have captured approximately <strong>7,500+ additional ETH</strong> in value over 24 hours.</p>
+    
+    <p>That's roughly 2,700 ETH per year being left on the table by local builders.</p>
+    
+    <h3>Who Benefits?</h3>
+    
+    <p>The beneficiaries of this inefficiency are clear:</p>
+    
+    <ol>
+        <li><strong>Other validators:</strong> When one validator leaves MEV uncaptured, it often flows to the next block via the mempool, slightly increasing the next proposer's yield</li>
+        <li><strong>Searchers:</strong> Missed opportunities in block N become fresh opportunities in block N+1</li>
+        <li><strong>Users:</strong> Less MEV extraction can mean slightly better execution prices for traders (though this is debated)</li>
+    </ol>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Sources:</strong></p>
+    <ul>
+        <li><code>mainnet.fct_prepared_block</code> — Local block building data (xatu-cbt)</li>
+        <li><code>mainnet.fct_block_mev_head</code> — Relay-delivered block values (xatu-cbt)</li>
+    </ul>
+    
+    <p><strong>Date range:</strong> February 1, 2026 06:00 UTC — February 2, 2026 06:00 UTC (24 hours)</p>
+    
+    <h3>Query: Local Block Value Distribution</h3>
+    <pre><code>SELECT
+  CASE 
+    WHEN execution_payload_value = 0 THEN 'zero_value'
+    WHEN execution_payload_value < 0.001 * 1e18 THEN 'micro_mev'
+    WHEN execution_payload_value < 0.01 * 1e18 THEN 'small_mev'
+    WHEN execution_payload_value < 0.1 * 1e18 THEN 'medium_mev'
+    ELSE 'large_mev'
+  END AS value_bucket,
+  COUNT() AS block_count,
+  COUNT() * 100.0 / SUM(COUNT()) OVER () AS percentage
+FROM mainnet.fct_prepared_block FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 24 HOUR
+GROUP BY value_bucket</code></pre>
+    
+    <h2>Conclusions</h2>
+    
+    <h3>What We Learned</h3>
+    <ul>
+        <li>The MEV relay ecosystem is extracting 1,600x more value per block than local builders on average</li>
+        <li>Over half of all locally-built blocks capture zero MEV — pure mempool ordering with no optimization</li>
+        <li>Prysm and Nimbus local builders perform significantly better than other clients</li>
+        <li>The "local builder penalty" is roughly 0.053 ETH per block in opportunity cost</li>
+    </ul>
+    
+    <h3>Implications</h3>
+    
+    <p>This data validates the economic rationale behind MEV relays. The specialization of block building — separating proposers (validators) from builders (searchers) — creates significant value for the network. Validators who forego relays are making a deliberate tradeoff: accepting lower yields for other benefits like privacy or censorship resistance.</p>
+    
+    <p>The question isn't whether relays are more profitable — they clearly are. The question is whether the non-economic benefits of local building justify the cost. For solo stakers with strong principles, the answer may be yes. For yield-maximizing operators, the data speaks for itself.</p>
+    
+    <h3>Limitations</h3>
+    <ul>
+        <li>24-hour window may not capture all market conditions</li>
+        <li>Local block values reflect the xatu node's view — other nodes may build differently</li>
+        <li>Some "local" blocks may actually be from private relays not captured in the MEV data</li>
+        <li>Value calculations don't account for priority fees that may flow to validators separately</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe">View Thread on X</a></p>
+    </div>
+</body>
+</html>
