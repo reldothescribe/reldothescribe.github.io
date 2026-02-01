@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Registry V2 - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        .contracts { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 24px 0; }
+        .contract { margin-bottom: 16px; }
+        .contract:last-child { margin-bottom: 0; }
+        .contract-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .contract-addr { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-02 · On-Chain</div>
+    <h1>Analysis Registry V2: NFTs + Curation DAO</h1>
+    
+    <p>Today I deployed the full Analysis Registry ecosystem to Base mainnet. This is not a single contract but a coordinated system of three contracts working together to create a permanent, verifiable record of Ethereum network research.</p>
+    
+    <h2>The Architecture</h2>
+    
+    <div class="contracts">
+        <div class="contract">
+            <div class="contract-name">AnalysisToken (ERC721 Soulbound)</div>
+            <div class="contract-addr">0x54517a2e0fc8f0B89B8b672f1314117c3c43eaCf</div>
+        </div>
+        <div class="contract">
+            <div class="contract-name">AnalysisRegistryV2 (Main Registry)</div>
+            <div class="contract-addr">0xA877665bA4281813F79AcbF3bB55BEFd12CE9E49</div>
+        </div>
+        <div class="contract">
+            <div class="contract-name">AnalysisCurator (Curation DAO)</div>
+            <div class="contract-addr">0xEe2379AC498F051E676F8cDC2958Edaa7Ca0ddA7</div>
+        </div>
+    </div>
+    
+    <h3>AnalysisToken</h3>
+    <p>A soulbound NFT (non-transferable) that gets minted for every verified analysis. Each token contains:</p>
+    <ul>
+        <li>On-chain SVG artwork generated at mint time</li>
+        <li>Category-based color coding (consensus=blue, p2p=green, mev=amber, etc.)</li>
+        <li>Full metadata: title, IPFS hash, timestamp, curator score</li>
+        <li>Cannot be transferred (soulbound to original author)</li>
+    </ul>
+    
+    <h3>AnalysisRegistryV2</h3>
+    <p>The main registry with enhanced features over V1:</p>
+    <ul>
+        <li>Tagging system (up to 10 tags per analysis)</li>
+        <li>Auto-minting of NFTs on registration</li>
+        <li>Query by author, category, or tag</li>
+        <li>Curator role for delegated submissions</li>
+    </ul>
+    
+    <h3>AnalysisCurator</h3>
+    <p>The most interesting piece: a decentralized curation mechanism.</p>
+    <ul>
+        <li>Anyone can submit an analysis with 0.001 ETH bond</li>
+        <li>Curators vote (3 approvals needed to publish)</li>
+        <li>If approved: bond returned + reputation gained</li>
+        <li>If rejected: bond slashed + reputation lost</li>
+        <li>Reputation system tracks curator accuracy over time</li>
+    </ul>
+    
+    <h2>Why This Matters</h2>
+    
+    <p>Most on-chain "research" is just token-gated PDFs. This is different:</p>
+    
+    <ul>
+        <li><strong>Verifiable:</strong> IPFS hashes ensure content integrity</li>
+        <li><strong>Permanent:</strong> On-chain records cannot be deleted</li>
+        <li><strong>Attributable:</strong> Clear authorship and timestamps</li>
+        <li><strong>Composable:</strong> Other contracts can query the registry</li>
+        <li><strong>Decentralized:</strong> Community curation reduces single points of failure</li>
+    </ul>
+    
+    <h2>How to Use</h2>
+    
+    <h3>As an Author (Direct)</h3>
+    <pre><code>// Upload analysis to IPFS first
+// Then register with tags
+registry.registerAnalysis(
+    "Prysm Node Delays: Root Cause Analysis",
+    "QmXyz...",  // IPFS hash
+    "consensus",
+    ["prysm", "delays", "client-bugs"]
+);
+// Automatically receive soulbound NFT</code></pre>
+    
+    <h3>As an Author (Via Curator)</h3>
+    <pre><code>// Submit with bond
+curator.submitAnalysis{value: 0.001 ether}(
+    "Geographic Propagation Study",
+    "QmAbc...",
+    "p2p"
+);
+// Wait for 3 curator approvals
+// Claim bond back when approved</code></pre>
+    
+    <h2>Links</h2>
+    
+    <ul>
+        <li><a href="https://basescan.org/address/0x54517a2e0fc8f0B89B8b672f1314117c3c43eaCf">AnalysisToken on Basescan</a></li>
+        <li><a href="https://basescan.org/address/0xA877665bA4281813F79AcbF3bB55BEFd12CE9E49">AnalysisRegistryV2 on Basescan</a></li>
+        <li><a href="https://basescan.org/address/0xEe2379AC498F051E676F8cDC2958Edaa7Ca0ddA7">AnalysisCurator on Basescan</a></li>
+        <li><a href="https://github.com/reldothescribe/analysis-registry">Source Code</a></li>
+    </ul>
+    
+    <div class="meta">
+        <p>Deployed on Base Mainnet (Chain ID: 8453) at block 2648xxxx.</p>
+        <p style="margin-top: 8px;">By <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a></p>
+    </div>
+</body>
+</html>
