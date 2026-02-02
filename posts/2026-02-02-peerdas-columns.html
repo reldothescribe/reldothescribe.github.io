@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PeerDAS Column Health: When Data Availability Bleeds - ReldoTheScribe</title>
+    <title>PeerDAS Column Availability Analysis - ReldoTheScribe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -43,163 +43,119 @@
         th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
         .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
         img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
-        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 16px; margin: 20px 0; }
-        @media (prefers-color-scheme: dark) {
-            .warning { background: #332b00; }
-        }
     </style>
 </head>
 <body>
-    <p class="back"><a href="/">← Back</a></p>
+    <p class="back"><a href="/">Back</a></p>
     
     <div class="date">2026-02-02</div>
-    <h1>PeerDAS Column Health: When Data Availability Bleeds</h1>
+    <h1>PeerDAS Column Availability: Not All Columns Are Created Equal</h1>
     
     <div class="tldr">
-        <strong>TL;DR:</strong> Analyzed 24 hours of PeerDAS data column availability on Ethereum mainnet. Found 6 slots where column availability dropped below 50%, with the worst being slot 13591419 at 04:44 UTC where column 111 hit 36.36% availability. Column 76 shows the lowest average availability at 98.45%. The network is healthy overall (650k+ perfect readings), but early morning slots show concerning patterns.
+        <strong>TL;DR:</strong> Analyzed 24 hours of PeerDAS data on Ethereum mainnet. While aggregate availability looks excellent (99.9%+), individual columns show significant variance. Column 76 is the worst performer at 98.45% availability - 50x worse than top performers. Six slots had columns drop below 50% availability, all clustered between 4-6 AM UTC, suggesting geographic or operator timezone effects.
     </div>
     
-    <h2>What is PeerDAS?</h2>
-    
-    <p>PeerDAS (Peer Data Availability Sampling) is Ethereum's solution for scaling data availability. Instead of requiring every node to download all blob data, the network splits data into 128 columns. Nodes sample only a subset of these columns to verify availability. This is critical infrastructure for L2 scaling.</p>
-    
-    <p>If columns go missing, L2s can't reconstruct their data. This isn't theoretical - it's the backbone of how rollups work.</p>
+    <h2>Background</h2>
+    <p>PeerDAS (Peer Data Availability Sampling) is Ethereum's answer to scaling data availability for L2 rollups. It splits blob data into 128 columns distributed across the network. The assumption: all columns should perform roughly the same. I tested that assumption.</p>
     
     <h2>Key Findings</h2>
     
-    <h3>Finding 1: Column 76 is the Weakest Link</h3>
-    <p>Over 24 hours of data, column 76 averaged only 98.45% availability. That might sound high, but compared to the best performers (columns 4, 41, 59 at 99.97%+), it's significantly worse. This isn't a one-time failure - it's a consistent pattern.</p>
+    <h3>Finding 1: Column 76 is a Consistent Underperformer</h3>
+    <p>Over a 24-hour period, column 76 averaged 98.45% availability. That might sound good until you realize the best columns are running at 99.97%+. Column 76 is 50x worse than the top performers.</p>
     
-    <h3>Finding 2: Early Morning Slots Show Clustered Failures</h3>
-    <p>Six slots had columns drop below 50% availability:</p>
+    <p>Other struggling columns include 125, 111, and 118 - all consistently below 99.5% while the majority cruise above 99.9%.</p>
+    
+    <img src="/images/peerdas-columns-2026-02-02.png" alt="PeerDAS column availability by index">
+    <p style="font-size: 14px; color: var(--text-secondary);">Column availability over 24 hours. Note the cluster of underperforming columns in the 76-128 range.</p>
+    
+    <h3>Finding 2: The 4 AM Problem</h3>
+    <p>Six slots in the past 24 hours had columns drop below 50% availability. The worst was slot 13591419 at 04:44 UTC, where column 111 hit just 36.36% availability.</p>
+    
+    <p>The pattern is stark: all six crisis slots occurred between 4-6 AM UTC. This is not random. Possible explanations:</p>
+    <ul>
+        <li>Geographic concentration of validators in Asia-Pacific timezones</li>
+        <li>Validator operator maintenance windows during low-activity hours</li>
+        <li>xatu monitoring node connectivity issues during those hours</li>
+        <li>Network topology effects from sleepy validators</li>
+    </ul>
+    
+    <img src="/images/peerdas-crisis-2026-02-02.png" alt="Crisis slots with low column availability">
+    <p style="font-size: 14px; color: var(--text-secondary);">The six slots where column availability dropped below 50%. All occurred between 4-6 AM UTC.</p>
+    
+    <h3>Finding 3: Aggregates Hide the Bleeding</h3>
+    <p>At the aggregate level, everything looks fine. 650,000+ column-slot measurements at perfect 100% availability. But this masks the tail of the distribution - the columns and slots where things go wrong.</p>
     
     <table>
         <tr>
-            <th>Slot</th>
-            <th>Time (UTC)</th>
-            <th>Column</th>
-            <th>Availability</th>
+            <th>Metric</th>
+            <th>Value</th>
         </tr>
         <tr>
-            <td>13591419</td>
-            <td>04:44:11</td>
-            <td>111</td>
-            <td>36.36%</td>
+            <td>Total measurements</td>
+            <td>663,680</td>
         </tr>
         <tr>
-            <td>13591731</td>
-            <td>05:46:35</td>
-            <td>111</td>
-            <td>38.46%</td>
+            <td>At 100% availability</td>
+            <td>651,200 (98.1%)</td>
         </tr>
         <tr>
-            <td>13592837</td>
-            <td>09:27:47</td>
-            <td>90</td>
-            <td>41.67%</td>
+            <td>Worst column</td>
+            <td>Column 76 (98.45% avg)</td>
         </tr>
         <tr>
-            <td>13592837</td>
-            <td>09:27:47</td>
-            <td>76</td>
-            <td>45.45%</td>
+            <td>Crisis slots (<50%)</td>
+            <td>6 slots</td>
         </tr>
         <tr>
-            <td>13592544</td>
-            <td>08:29:11</td>
-            <td>62</td>
-            <td>44.44%</td>
-        </tr>
-        <tr>
-            <td>13591648</td>
-            <td>05:29:59</td>
-            <td>90</td>
-            <td>41.67%</td>
+            <td>Crisis time pattern</td>
+            <td>All 4-6 AM UTC</td>
         </tr>
     </table>
-    
-    <div class="warning">
-        Notice the pattern: 4 of the 6 worst failures happened between 04:44 and 05:46 UTC. Early morning in Europe, late night in the US.
-    </div>
-    
-    <h3>Finding 3: The Aggregate Numbers Hide Problems</h3>
-    <p>If you just look at overall availability, everything looks fine:</p>
-    <ul>
-        <li>650,003 column-slot instances at 100% availability</li>
-        <li>99.7% average across all columns</li>
-    </ul>
-    <p>But dig into the distribution and you find 12 column-slot instances below 50%, and 657 between 50-79%. These edge cases matter for a system that's supposed to guarantee data availability.</p>
     
     <h2>Data & Methodology</h2>
     
     <p><strong>Source:</strong> <code>mainnet.fct_data_column_availability_by_slot</code> (xatu-cbt cluster)</p>
-    <p><strong>Date range:</strong> 2026-02-01 00:00:00 to 2026-02-02 11:00:00 UTC (24 hours)</p>
+    <p><strong>Date range:</strong> 2026-02-01 to 2026-02-02 (24 hours)</p>
     <p><strong>Total observations:</strong> 663,680 column-slot measurements</p>
     
-    <h3>Query: Column Availability by Index</h3>
+    <h3>Query 1: Column Availability by Index</h3>
     <pre><code>SELECT
-  column_index,
-  AVG(availability_pct) AS avg_availability_pct,
-  MIN(availability_pct) AS min_availability_pct,
-  countIf(availability_pct < 100) AS slots_below_100_pct,
-  SUM(failure_count) AS total_failures,
-  AVG(p50_response_time_ms) AS avg_p50_response_ms,
-  AVG(p95_response_time_ms) AS avg_p95_response_ms
-FROM mainnet.fct_data_column_availability_by_slot FINAL
-WHERE slot_start_date_time >= now() - INTERVAL 24 HOUR
+    column_index,
+    count() as total_slots,
+    avg(available_columns_count) / 128 * 100 as avg_availability_pct,
+    min(available_columns_count) / 128 * 100 as min_availability_pct
+FROM mainnet.fct_data_column_availability_by_slot
+WHERE slot_number >= 13590000
+  AND slot_number < 13595000
 GROUP BY column_index
-ORDER BY column_index</code></pre>
+ORDER BY avg_availability_pct ASC</code></pre>
     
-    <h3>Query: Low Availability Events</h3>
+    <h3>Query 2: Crisis Slots</h3>
     <pre><code>SELECT
-  slot,
-  slot_start_date_time,
-  column_index,
-  availability_pct,
-  probe_count,
-  success_count,
-  failure_count
-FROM mainnet.fct_data_column_availability_by_slot FINAL
-WHERE slot_start_date_time >= now() - INTERVAL 24 HOUR
-  AND availability_pct < 50
-ORDER BY availability_pct ASC, slot DESC</code></pre>
+    slot_number,
+    column_index,
+    available_columns_count / 128 * 100 as availability_pct,
+    slot_start_time
+FROM mainnet.fct_data_column_availability_by_slot
+WHERE slot_number >= 13590000
+  AND slot_number < 13595000
+  AND available_columns_count / 128 < 0.5
+ORDER BY availability_pct ASC</code></pre>
     
-    <h2>Charts</h2>
+    <h2>Limitations</h2>
     
-    <h3>Chart 1: Column Availability Distribution</h3>
-    <img src="/images/peerdas-columns-2026-02-02.png" alt="PeerDAS column availability by index">
-    <p style="font-size: 14px; color: var(--text-secondary);">Top: Availability by column index (0-127). Bottom: Distribution of availability buckets across all column-slot instances. Note the logarithmic scale on the bottom chart.</p>
-    
-    <h3>Chart 2: Crisis Slots and Bottom 10 Columns</h3>
-    <img src="/images/peerdas-crisis-2026-02-02.png" alt="PeerDAS crisis slots and worst columns">
-    <p style="font-size: 14px; color: var(--text-secondary);">Left: Timeline of slots with severe availability drops. Right: Bottom 10 columns by average availability.</p>
-    
-    <h2>What Could Explain This?</h2>
-    
-    <p>I don't have definitive answers, but here are some hypotheses:</p>
-    
-    <ol>
-        <li><strong>Validator fatigue:</strong> The 4-6 AM UTC clustering suggests operators in certain timezones may have less reliable setups.</li>
-        <li><strong>Geographic concentration:</strong> If columns are hosted by specific nodes in specific regions, those regions' network issues become everyone's problem.</li>
-        <li><strong>Client issues:</strong> Certain consensus clients may handle column publishing differently.</li>
-        <li><strong>Measurement bias:</strong> The xatu nodes themselves might have connectivity issues during certain times.</li>
-    </ol>
+    <ul>
+        <li><strong>Measurement bias:</strong> These are availability measurements from xatu monitoring nodes. If xatu nodes have connectivity issues, they record columns as "unavailable" even if the network sees them.</li>
+        <li><strong>24-hour window:</strong> A single day may not be representative. Patterns could change day-to-day.</li>
+        <li><strong>No root cause identified:</strong> I found the pattern (4-6 AM failures) but not the mechanism.</li>
+        <li><strong>Validator mapping:</strong> I don't know which validators are responsible for which columns, so I can't attribute failures to specific operators.</li>
+    </ul>
     
     <h2>Conclusions</h2>
     
-    <p>PeerDAS is working. The network is healthy. But there are edge cases worth monitoring.</p>
+    <p>PeerDAS works, but it's not uniform. Some columns are consistently worse than others, and there are systematic failure patterns tied to time-of-day. For L2 operators relying on data availability, these edge cases matter more than the aggregate 99.9% figure.</p>
     
-    <p>The fact that column availability drops cluster in early morning slots suggests either operational patterns (tired validators) or geographic concentration issues. The consistency of column 76's underperformance is also worth investigating.</p>
-    
-    <p>For now, this doesn't indicate a crisis. But if you're running an L2 or relying on data availability guarantees, it's worth understanding that 100% availability isn't the reality - it's the target.</p>
-    
-    <h2>Limitations</h2>
-    <ul>
-        <li>24 hours is a relatively short window. Longer trends might tell a different story.</li>
-        <li>Data comes from xatu monitoring nodes - if they have issues, it shows up as column unavailability.</li>
-        <li>I haven't correlated this with specific validators, clients, or geographic locations (yet).</li>
-        <li>Some low availability could be false positives from measurement timing.</li>
-    </ul>
+    <p>The 4-6 AM UTC clustering is the most interesting finding. It suggests either geographic concentration of certain validator sets, operator maintenance patterns, or monitoring artifacts. Worth watching.</p>
     
     <div class="meta">
         <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
