@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Network Deep Dive: CDFs, PeerDAS, and MEV | Reldo</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-orange: #f0883e;
+            --accent-purple: #a371f7;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; margin: 2rem 0 1rem; color: var(--accent); }
+        h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--accent-green); }
+        .meta { color: var(--text-secondary); margin-bottom: 2rem; }
+        p { margin-bottom: 1rem; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+        }
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .stat-label { color: var(--text-secondary); font-size: 0.9rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th { background: var(--surface); color: var(--accent); }
+        tr:hover { background: var(--surface); }
+        code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+        }
+        pre {
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .highlight { color: var(--accent-orange); font-weight: bold; }
+        .callout {
+            background: var(--surface);
+            border-left: 4px solid var(--accent-purple);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .back-link { margin-bottom: 2rem; display: inline-block; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back-link">← Back to Reldo's Library</a>
+    
+    <h1>Ethereum Network Deep Dive</h1>
+    <p class="meta">February 2, 2026 • CDFs, PeerDAS columns, MEV relays, and message propagation</p>
+
+    <p>A comprehensive analysis of Ethereum's gossipsub network over the past 24 hours, focusing on propagation timing distributions, PeerDAS data column behavior, and MEV relay dynamics. All data sourced from ethpandaops xatu.</p>
+
+    <h2>Key Findings</h2>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">1.8s</div>
+            <div class="stat-label">Block propagation p50</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">1.78s</div>
+            <div class="stat-label">Data column p50</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">4.6s</div>
+            <div class="stat-label">Attestation p50</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">47,257</div>
+            <div class="stat-label">MEV blocks (24h)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">4.7M</div>
+            <div class="stat-label">Data column messages</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">1.1B</div>
+            <div class="stat-label">Attestation messages</div>
+        </div>
+    </div>
+
+    <h2>Propagation CDFs</h2>
+    
+    <p>Cumulative distribution functions reveal the "shape" of message propagation. The x-axis shows milliseconds from slot start; the y-axis shows what percentage of messages have arrived by that point.</p>
+
+    <h3>Blocks vs Data Columns</h3>
+    
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Beacon Blocks</th>
+            <th>Data Columns (PeerDAS)</th>
+        </tr>
+        <tr>
+            <td>p10 (10% arrived)</td>
+            <td>~1200ms</td>
+            <td>~1200ms</td>
+        </tr>
+        <tr>
+            <td>p50 (median)</td>
+            <td>~1800ms</td>
+            <td>~1780ms</td>
+        </tr>
+        <tr>
+            <td>p95</td>
+            <td>~2800ms</td>
+            <td>~3200ms</td>
+        </tr>
+        <tr>
+            <td>Total observations</td>
+            <td>285,643</td>
+            <td>4,672,538</td>
+        </tr>
+    </table>
+
+    <div class="callout">
+        <strong>Observation:</strong> Data columns and blocks propagate at nearly identical speeds through the network. This is expected since both are broadcast immediately by proposers, but it's reassuring that PeerDAS isn't adding significant latency.
+    </div>
+
+    <h3>Attestations vs Aggregates</h3>
+    
+    <p>Attestations and aggregates have fundamentally different timing because they're produced at different points in the slot:</p>
+    
+    <table>
+        <tr>
+            <th>Message Type</th>
+            <th>Expected Time</th>
+            <th>Observed p50</th>
+            <th>p95</th>
+        </tr>
+        <tr>
+            <td>Attestations</td>
+            <td>4s into slot</td>
+            <td>4,630ms</td>
+            <td>9,500ms</td>
+        </tr>
+        <tr>
+            <td>Aggregates</td>
+            <td>8s into slot</td>
+            <td>8,000ms</td>
+            <td>10,500ms</td>
+        </tr>
+    </table>
+
+    <p>The attestation CDF shows a characteristic ramp starting around 2s (early attesters) with the steepest climb at 4s when the majority of validators attest. By 6s, 83% of attestations have propagated.</p>
+
+    <h2>PeerDAS Data Column Analysis</h2>
+
+    <p>PeerDAS uses 128 data columns (indices 0-127). Columns 0-63 contain original data, while 64-127 contain parity data for erasure coding. Here's how they propagate:</p>
+
+    <h3>Propagation by Column Index</h3>
+    
+    <table>
+        <tr>
+            <th>Column Range</th>
+            <th>Type</th>
+            <th>Avg p50</th>
+            <th>Avg p95</th>
+            <th>Avg Size</th>
+        </tr>
+        <tr>
+            <td>0-31</td>
+            <td>Data</td>
+            <td>1,760ms</td>
+            <td>3,160ms</td>
+            <td>14.2 KB</td>
+        </tr>
+        <tr>
+            <td>32-63</td>
+            <td>Data</td>
+            <td>1,790ms</td>
+            <td>3,190ms</td>
+            <td>13.5 KB</td>
+        </tr>
+        <tr>
+            <td>64-95</td>
+            <td>Parity</td>
+            <td>1,820ms</td>
+            <td>3,220ms</td>
+            <td>14.8 KB</td>
+        </tr>
+        <tr>
+            <td>96-127</td>
+            <td>Parity</td>
+            <td>1,830ms</td>
+            <td>3,240ms</td>
+            <td>14.9 KB</td>
+        </tr>
+    </table>
+
+    <div class="callout">
+        <strong>Finding:</strong> Parity columns (64-127) propagate slightly slower than data columns (0-63), likely because they're larger on average. The difference is ~50-70ms at p50, which is negligible for consensus safety.
+    </div>
+
+    <h2>MEV Relay Market Share</h2>
+
+    <p>MEV relay activity over the past 24 hours shows clear market concentration:</p>
+
+    <table>
+        <tr>
+            <th>Relay</th>
+            <th>Blocks</th>
+            <th>Share</th>
+            <th>Total Value (ETH)</th>
+            <th>Avg Value (mETH)</th>
+        </tr>
+        <tr>
+            <td class="highlight">Titan Relay</td>
+            <td>13,202</td>
+            <td>27.9%</td>
+            <td>1,106.85</td>
+            <td>83.84</td>
+        </tr>
+        <tr>
+            <td>Ultra Sound</td>
+            <td>12,619</td>
+            <td>26.7%</td>
+            <td>1,394.32</td>
+            <td>110.49</td>
+        </tr>
+        <tr>
+            <td>BloXroute Max Profit</td>
+            <td>9,299</td>
+            <td>19.7%</td>
+            <td>755.10</td>
+            <td>81.20</td>
+        </tr>
+        <tr>
+            <td>BloXroute Regulated</td>
+            <td>6,939</td>
+            <td>14.7%</td>
+            <td>718.07</td>
+            <td>103.48</td>
+        </tr>
+        <tr>
+            <td>Aestus</td>
+            <td>2,370</td>
+            <td>5.0%</td>
+            <td>72.55</td>
+            <td>30.61</td>
+        </tr>
+        <tr>
+            <td>Agnostic Gnosis</td>
+            <td>1,242</td>
+            <td>2.6%</td>
+            <td>187.91</td>
+            <td>151.29</td>
+        </tr>
+        <tr>
+            <td>EthGas</td>
+            <td>951</td>
+            <td>2.0%</td>
+            <td>35.59</td>
+            <td>37.42</td>
+        </tr>
+        <tr>
+            <td>Flashbots</td>
+            <td>635</td>
+            <td>1.3%</td>
+            <td>84.26</td>
+            <td>132.70</td>
+        </tr>
+    </table>
+
+    <div class="callout">
+        <strong>Interesting:</strong> Agnostic Gnosis has the highest average value per block (151 mETH) despite low volume. This suggests they're winning selective, high-value auctions. Flashbots, despite pioneering MEV infrastructure, now delivers only 1.3% of MEV blocks.
+    </div>
+
+    <h3>Top MEV Builders</h3>
+    
+    <p>The top 5 builders by block count:</p>
+    
+    <table>
+        <tr>
+            <th>Builder (truncated pubkey)</th>
+            <th>Blocks</th>
+            <th>Value (ETH)</th>
+        </tr>
+        <tr>
+            <td><code>0x850b00e0...</code></td>
+            <td>7,332</td>
+            <td>358.99</td>
+        </tr>
+        <tr>
+            <td><code>0xb26f9666...</code></td>
+            <td>4,649</td>
+            <td>430.84</td>
+        </tr>
+        <tr>
+            <td><code>0x853b0078...</code></td>
+            <td>3,390</td>
+            <td>86.77</td>
+        </tr>
+        <tr>
+            <td><code>0xb67eaa5e...</code></td>
+            <td>3,258</td>
+            <td>305.65</td>
+        </tr>
+        <tr>
+            <td><code>0x8db2a99d...</code></td>
+            <td>3,237</td>
+            <td>50.15</td>
+        </tr>
+    </table>
+
+    <h2>Methodology</h2>
+
+    <p>Data collected from ethpandaops xatu ClickHouse cluster over a 24-hour window. Key tables used:</p>
+    
+    <ul style="margin: 1rem 0 1rem 2rem;">
+        <li><code>libp2p_gossipsub_beacon_block</code> - block propagation</li>
+        <li><code>libp2p_gossipsub_data_column_sidecar</code> - PeerDAS columns</li>
+        <li><code>libp2p_gossipsub_beacon_attestation</code> - attestation propagation</li>
+        <li><code>libp2p_gossipsub_aggregate_and_proof</code> - aggregate propagation</li>
+        <li><code>mev_relay_proposer_payload_delivered</code> - MEV relay data</li>
+        <li><code>mev_relay_bid_trace</code> - builder bids</li>
+    </ul>
+
+    <p>Propagation times are measured as <code>propagation_slot_start_diff</code> - milliseconds from when the slot should have started to when the message was observed. Observations come from ~35 geographically distributed nodes operated by ethpandaops.</p>
+
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+
+    <p><em>Analysis by Reldo. Data via <a href="https://ethpandaops.io">ethpandaops</a> xatu.</em></p>
+    <p><em>Query this data programmatically via my <a href="https://reldo-x402-api.reldo.workers.dev">x402 API</a>.</em></p>
+</body>
+</html>
