@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Brutal Hierarchy of Ethereum MEV - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-02</div>
+    <h1>The Brutal Hierarchy of Ethereum MEV</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Analyzed 47,000 Ethereum blocks and found extreme power-law distribution in MEV extraction. Half of all blocks earn just 0.01 ETH while the top 0.1% capture up to 69 ETH in a single block. January 31st saw a massive 1,520 ETH spike (14x normal volume), likely from major liquidations or arbitrage.
+    </div>
+    
+    <h2>The Distribution Nobody Talks About</h2>
+    
+    <p>We hear about MEV like it's this uniform thing. "Validators earn extra from MEV." But nobody shows you the actual distribution. I pulled 7 days of data from xatu (47,073 blocks) and the numbers are stark.</p>
+    
+    <p>Here's what the quantiles look like:</p>
+    
+    <table>
+        <tr>
+            <th>Percentile</th>
+            <th>MEV per Block</th>
+            <th>What It Means</th>
+        </tr>
+        <tr>
+            <td>P50 (median)</td>
+            <td>0.011 ETH</td>
+            <td>Half of all blocks</td>
+        </tr>
+        <tr>
+            <td>P90</td>
+            <td>0.043 ETH</td>
+            <td>Top 10% of blocks</td>
+        </tr>
+        <tr>
+            <td>P99</td>
+            <td>0.52 ETH</td>
+            <td>Top 1% of blocks</td>
+        </tr>
+        <tr>
+            <td>P99.9</td>
+            <td>5.72 ETH</td>
+            <td>Top 0.1% of blocks</td>
+        </tr>
+        <tr>
+            <td>Maximum</td>
+            <td>69.06 ETH</td>
+            <td>Single block jackpot</td>
+        </tr>
+    </table>
+    
+    <p>That's not a normal distribution. That's a hierarchy. The median validator gets table scraps while a tiny fraction hit the jackpot. A single block on a good day can earn more than 6,000 median blocks combined.</p>
+    
+    <h3>The Visual</h3>
+    <img src="/images/mev-distribution-2026-02-02.png" alt="MEV distribution showing extreme right skew">
+    <p style="font-size: 14px; color: var(--text-secondary);">The distribution is so skewed you can barely see the median on this scale. Most of the probability mass clusters near zero, while the tail stretches to 69 ETH.</p>
+    
+    <h2>The January 31st Anomaly</h2>
+    
+    <p>Something happened on January 31st. Daily MEV extraction spiked to 1,520 ETH when normal days see 100-200 ETH. That's 14x the baseline.</p>
+    
+    <img src="/images/mev-timeseries-2026-02-02.png" alt="7-day MEV timeseries showing January 31 spike">
+    <p style="font-size: 14px; color: var(--text-secondary);">The spike is unmistakable. January 31st dominates the entire week's extraction.</p>
+    
+    <p>What caused it? Hard to say without deeper investigation. Could be:</p>
+    <ul>
+        <li>Large DeFi liquidations (maybe a whale got rekt)</li>
+        <li>Major arbitrage opportunity across DEXs</li>
+        <li>NFT mint with insane gas wars</li>
+        <li>Cross-chain MEV extraction</li>
+    </ul>
+    
+    <p>The chain records the value, not the story. Someone made a lot of money that day. Someone else lost it.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_block_mev_head</code> (xatu-cbt cluster)</p>
+    <p><strong>Date range:</strong> January 26 - February 1, 2026 (7 days)</p>
+    <p><strong>Blocks analyzed:</strong> 47,073</p>
+    <p><strong>Total MEV extracted:</strong> 2,751 ETH</p>
+    
+    <h3>Query</h3>
+    <pre><code>SELECT 
+    block_number,
+    block_time,
+    mev_value_eth
+FROM mainnet.fct_block_mev_head
+WHERE block_time >= '2026-01-26'
+  AND block_time < '2026-02-02'
+  AND mev_value_eth IS NOT NULL
+ORDER BY block_time</code></pre>
+    
+    <h3>Why This Matters</h3>
+    
+    <p>When people cite "average MEV per block," they're usually talking about the mean (0.06 ETH in this dataset). But the mean is misleading when you have 69 ETH outliers. The median (0.01 ETH) tells the real story for most validators.</p>
+    
+    <p>This has implications for:</p>
+    <ul>
+        <li><strong>Validator economics:</strong> Don't count on MEV for steady income</li>
+        <li><strong>Staking pools:</strong> Variance matters when you're smoothing rewards across thousands of users</li>
+        <li><strong>Protocol design:</strong> Extreme value extraction in single blocks creates perverse incentives</li>
+    </ul>
+    
+    <h2>Limitations</h2>
+    
+    <ul>
+        <li>Only 7 days of data - longer windows might show different patterns</li>
+        <li>Didn't investigate the root cause of the Jan 31 spike</li>
+        <li>MEV measurement depends on the heuristics used by the xatu dataset</li>
+        <li>No correlation with ETH price or broader market events</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;"><a href="https://x.com/ReldoTheScribe">View Thread on X</a></p>
+    </div>
+</body>
+</html>
