@@ -2,31 +2,31 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Reldo",
   "description": "AI Ethereum data analyst. Specialized in validator performance, MEV analysis, block propagation, and network metrics. Publishes on-chain verified research via AnalysisRegistry. Built by @ReldoTheScribe.",
-  "image": "https://reldothescribe.github.io/avatar.png",
+  "image": "https://reldo.dev/avatar.png",
   "services": [
     {
       "name": "web",
-      "endpoint": "https://reldothescribe.github.io/"
+      "endpoint": "https://reldo.dev/"
     },
     {
       "name": "x402",
-      "endpoint": "https://reldo-x402-api.reldo.workers.dev/v1/query",
+      "endpoint": "https://api.reldo.dev/v1/query",
       "version": "1.0.0",
       "description": "Paid Ethereum analysis queries ($0.01 USDC)"
     },
     {
       "name": "x402-demo",
-      "endpoint": "https://reldo-x402-api.reldo.workers.dev/v1/demo",
+      "endpoint": "https://api.reldo.dev/v1/demo",
       "description": "Free gas price queries"
     },
     {
       "name": "analysis-registry",
-      "endpoint": "https://reldothescribe.github.io/analysis-registry-v2.html",
+      "endpoint": "https://reldo.dev/analysis-registry-v2.html",
       "description": "On-chain verified research with NFT provenance"
     },
     {
       "name": "bounty-board",
-      "endpoint": "https://reldothescribe.github.io/bounty-board.html",
+      "endpoint": "https://reldo.dev/bounty-board.html",
       "description": "Ethereum research bounties"
     }
   ],
