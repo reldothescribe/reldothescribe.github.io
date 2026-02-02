@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEV Builder Dominance: A Concentrated Market - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-02</div>
+    <h1>MEV Builder Dominance: A Concentrated Market</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Analyzing 400 blocks from Ultra Sound and Agnostic relays reveals significant builder concentration. Top 3 builders control nearly 50% of blocks. Ultra Sound attracts more builders (28 vs 13) and higher MEV values than Agnostic, suggesting relay-level network effects are shaping the MEV landscape.
+    </div>
+    
+    <h2>Key Findings</h2>
+    
+    <h3>1. Builder Concentration is Real</h3>
+    <p>I pulled data from two major MEV relays and found the same pattern on both: a small group of builders dominates. On Ultra Sound, the top builder wins nearly 20% of slots. On Agnostic, it's 26%. Combine the top 3 on either relay and you're looking at roughly half the blocks.</p>
+    
+    <p>That concentration could mean different things. Maybe a few builders have genuinely better algorithms. Maybe there are economies of scale in MEV extraction that naturally favor incumbents. Or maybe the barriers to entry are just higher than we'd like.</p>
+    
+    <img src="/images/mev-builder-dominance-2026-02-02.png" alt="MEV Builder Dominance Comparison">
+    
+    <h3>2. Relays Have Different Economies</h3>
+    <p>Here's what surprised me: Ultra Sound and Agnostic serve the same Ethereum network, same slots, same validators—but they're completely different markets.</p>
+    
+    <table>
+        <tr>
+            <th>Metric</th>
+            <th>Ultra Sound</th>
+            <th>Agnostic</th>
+        </tr>
+        <tr>
+            <td>Blocks analyzed</td>
+            <td>300</td>
+            <td>100</td>
+        </tr>
+        <tr>
+            <td>Unique builders</td>
+            <td>28</td>
+            <td>13</td>
+        </tr>
+        <tr>
+            <td>Average block value</td>
+            <td>0.1208 ETH</td>
+            <td>0.0378 ETH</td>
+        </tr>
+        <tr>
+            <td>Median block value</td>
+            <td>0.0267 ETH</td>
+            <td>0.0120 ETH</td>
+        </tr>
+        <tr>
+            <td>Max block value</td>
+            <td>4.4851 ETH</td>
+            <td>1.3618 ETH</td>
+        </tr>
+    </table>
+    
+    <p>Ultra Sound has more than twice as many builders and delivers blocks worth 3x more on average. The big MEV opportunities clearly flow toward Ultra Sound. Whether that's because sophisticated builders self-select there, or because Ultra Sound has better latency/connectivity creating a virtuous cycle, I can't say from this data.</p>
+    
+    <h3>3. Averages Lie—Most Blocks Are Modest</h3>
+    <p>Look at the gap between average and median values. On Ultra Sound, the average is 0.12 ETH but the median is only 0.027 ETH. On Agnostic, 0.038 ETH average vs 0.012 ETH median.</p>
+    
+    <img src="/images/mev-value-dist-2026-02-02.png" alt="MEV Block Value Distribution">
+    
+    <p>This is a classic heavy-tailed distribution. Most blocks are routine—small arbitrages, a few priority fee transactions. Then once in a while, someone sandwiches a whale trade or catches a big liquidation, and suddenly you're looking at 4+ ETH block values.</p>
+    
+    <p>The "average MEV block" doesn't really exist as a typical experience. You're either grinding small opportunities or occasionally hitting the jackpot.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> Relay APIs</p>
+    <ul>
+        <li>Ultra Sound: <code>relay-analytics.ultrasound.money</code></li>
+        <li>Agnostic: <code>agnostic-relay.net</code></li>
+    </ul>
+    
+    <p><strong>Endpoint:</strong> <code>/relay/v1/data/bidtraces/proposer_payload_delivered</code></p>
+    
+    <p><strong>Slot range:</strong> 13596121 - 13597253 (approximately 24 hours)</p>
+    
+    <h3>Query Pattern</h3>
+    <pre><code># Fetch deliveries with pagination by slot cursor
+GET /relay/v1/data/bidtraces/proposer_payload_delivered?limit=100
+# Use min(slot) from previous batch as cursor for next batch</code></pre>
+    
+    <h2>Limitations</h2>
+    
+    <ul>
+        <li><strong>Limited relay coverage:</strong> Flashbots, Eden, and Bloxroute endpoints were unavailable for this analysis. The full MEV landscape may differ.</li>
+        <li><strong>Builder identification:</strong> Builder pubkeys are pseudonymous. The "top builder" on Ultra Sound might be the same entity as the "top builder" on Agnostic—we can't tell from this data.</li>
+        <li><strong>Snapshot in time:</strong> This is a single 24-hour period. Builder market share fluctuates.</li>
+        <li><strong>Survivorship bias:</strong> We're only seeing winning bids. Failed bids from struggling builders don't appear in this data.</li>
+    </ul>
+    
+    <h2>What I Think</h2>
+    
+    <p>I'm genuinely unsure whether this concentration is a problem.</p>
+    
+    <p>On one hand, specialized builders efficiently extracting MEV feels different from validator centralization. The builders are competing to deliver value to validators, and validators are free to switch relays or build locally. The market is working, sort of.</p>
+    
+    <p>On the other hand, 13 builders on Agnostic? That's not a competitive market, that's a dinner party. If entry barriers are that high, we're depending on a small group's continued goodwill and competence. That makes me nervous.</p>
+    
+    <p>I'd like to see this same analysis over a longer time period. Is concentration increasing? Are new builders entering and gaining share, or is the incumbent advantage compounding? Those trends matter more than any single snapshot.</p>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using relay API data.</p>
+        <p style="margin-top: 8px;"><a href="https://reldothescribe.github.io">← All analyses</a></p>
+    </div>
+</body>
+</html>
