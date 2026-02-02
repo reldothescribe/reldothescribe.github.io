@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analysis Registry - ReldoTheScribe</title>
+    <title>Analysis Registry V2 - ReldoTheScribe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/ethers@6/dist/ethers.umd.min.js"></script>
@@ -36,6 +36,20 @@
             margin: 32px 0; font-family: 'JetBrains Mono', monospace; font-size: 13px;
         }
         .contract-info a { word-break: break-all; }
+        .contract-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .contract-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: baseline;
+        }
+        .contract-label {
+            color: var(--text-secondary);
+            min-width: 140px;
+        }
         h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
         .analysis-card {
             border: 1px solid var(--border); border-radius: 4px;
@@ -47,11 +61,18 @@
             color: var(--text-tertiary); margin-bottom: 8px;
         }
         .analysis-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-        .analysis-meta { font-size: 14px; color: var(--text-secondary); }
+        .analysis-meta { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+        .analysis-tags { margin-top: 12px; }
         .category-tag {
             display: inline-block; background: var(--code-bg);
             padding: 2px 8px; border-radius: 3px; font-size: 12px;
             font-family: 'JetBrains Mono', monospace; margin-right: 8px;
+        }
+        .tag {
+            display: inline-block; background: var(--code-bg);
+            padding: 2px 8px; border-radius: 3px; font-size: 11px;
+            font-family: 'JetBrains Mono', monospace; margin-right: 6px;
+            color: var(--text-secondary);
         }
         .verified { color: #22c55e; }
         .loading { color: var(--text-tertiary); font-style: italic; }
@@ -60,26 +81,51 @@
         pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
         pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
         .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        .nft-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
     <p class="back"><a href="/">← Back</a></p>
     
-    <div class="date">On-Chain Registry</div>
+    <div class="date">On-Chain Registry V2</div>
     <h1>Analysis Registry</h1>
-    <p class="subtitle">A permanent, verifiable record of Ethereum network analyses</p>
+    <p class="subtitle">A permanent, verifiable record of Ethereum network analyses with soulbound NFTs</p>
     
     <div class="contract-info">
-        <strong>Contract:</strong> <a href="https://basescan.org/address/0x946a6632B3741c72a681e8B7a4B9349435797A67" target="_blank">0x946a6632B3741c72a681e8B7a4B9349435797A67</a><br>
-        <strong>Network:</strong> Base Mainnet<br>
-        <strong>Author:</strong> <a href="https://x.com/ReldoTheScribe" target="_blank">@ReldoTheScribe</a>
+        <div class="contract-grid">
+            <div class="contract-row">
+                <span class="contract-label">Registry V2:</span>
+                <a href="https://basescan.org/address/0xA877665bA4281813F79AcbF3bB55BEFd12CE9E49" target="_blank">0xA877...9E49</a>
+            </div>
+            <div class="contract-row">
+                <span class="contract-label">NFT Token:</span>
+                <a href="https://basescan.org/address/0x54517a2e0fc8f0B89B8b672f1314117c3c43eaCf" target="_blank">0x5451...eaCf</a>
+            </div>
+            <div class="contract-row">
+                <span class="contract-label">Curator:</span>
+                <a href="https://basescan.org/address/0xEe2379AC498F051E676F8cDC2958Edaa7Ca0ddA7" target="_blank">0xEe23...0ddA7</a>
+            </div>
+            <div class="contract-row">
+                <span class="contract-label">Network:</span>
+                <span>Base Mainnet</span>
+            </div>
+        </div>
     </div>
     
     <h2>About</h2>
     <p>
-        This smart contract serves as a permanent, on-chain registry for my Ethereum network analyses. 
-        Each analysis is registered with a title, content hash (IPFS), category, and timestamp. 
-        This creates a verifiable, tamper-proof record of my research that anyone can query or reference.
+        This smart contract ecosystem creates a permanent, on-chain registry for Ethereum network analyses.
+        Each analysis is registered with a title, content hash (IPFS), category, and tags. 
+        Verified analyses mint soulbound NFTs with on-chain SVG artwork.
     </p>
     
     <h2>Registered Analyses</h2>
@@ -97,11 +143,14 @@
         {"internalType": "string", "name": "title", "type": "string"},
         {"internalType": "string", "name": "contentHash", "type": "string"},
         {"internalType": "string", "name": "category", "type": "string"},
+        {"internalType": "string[]", "name": "tags", "type": "string[]"},
         {"internalType": "uint256", "name": "timestamp", "type": "uint256"},
         {"internalType": "address", "name": "author", "type": "address"},
-        {"internalType": "bool", "name": "verified", "type": "bool"}
+        {"internalType": "bool", "name": "verified", "type": "bool"},
+        {"internalType": "uint256", "name": "tokenId", "type": "uint256"},
+        {"internalType": "uint256", "name": "curatorScore", "type": "uint256"}
       ],
-      "internalType": "struct AnalysisRegistry.Analysis",
+      "internalType": "struct AnalysisRegistryV2.Analysis",
       "name": "",
       "type": "tuple"
     }],
@@ -111,17 +160,18 @@
 ]</code></pre>
     
     <div class="meta">
-        <p>Built with Foundry. Data stored on Base, content on IPFS.</p>
+        <p>Built with Foundry. Data stored on Base, content on IPFS, NFTs on-chain.</p>
+        <p style="margin-top: 8px;">By <a href="https://x.com/ReldoTheScribe" target="_blank">@ReldoTheScribe</a></p>
     </div>
 
     <script>
-        const CONTRACT_ADDRESS = '0x946a6632B3741c72a681e8B7a4B9349435797A67';
+        const CONTRACT_ADDRESS = '0xA877665bA4281813F79AcbF3bB55BEFd12CE9E49';
         const BASE_RPC = 'https://mainnet.base.org';
         
         const ABI = [
             "function analysisCount() view returns (uint256)",
-            "function getAnalysis(uint256 _id) view returns (tuple(string title, string contentHash, string category, uint256 timestamp, address author, bool verified))",
-            "function getAnalysesInRange(uint256 _start, uint256 _end) view returns (tuple(string title, string contentHash, string category, uint256 timestamp, address author, bool verified)[])"
+            "function getAnalysis(uint256 _id) view returns (tuple(string title, string contentHash, string category, string[] tags, uint256 timestamp, address author, bool verified, uint256 tokenId, uint256 curatorScore))",
+            "function getAnalysesInRange(uint256 _start, uint256 _end) view returns (tuple(string title, string contentHash, string category, string[] tags, uint256 timestamp, address author, bool verified, uint256 tokenId, uint256 curatorScore)[])"
         ];
         
         const CATEGORIES = {
@@ -153,22 +203,27 @@
                     const date = new Date(Number(a.timestamp) * 1000).toISOString().split('T')[0];
                     const category = CATEGORIES[a.category] || a.category;
                     const verifiedBadge = a.verified ? '<span class="verified">✓ Verified</span>' : '';
+                    const nftBadge = a.tokenId > 0 ? `<span class="nft-badge">NFT #${a.tokenId}</span>` : '';
+                    const tagsHtml = a.tags && a.tags.length > 0 
+                        ? `<div class="analysis-tags">${a.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>`
+                        : '';
                     
                     return `
                         <div class="analysis-card">
-                            <div class="analysis-id">#${realId} ${verifiedBadge}</div>
+                            <div class="analysis-id">#${realId} ${verifiedBadge}${nftBadge}</div>
                             <div class="analysis-title">${a.title}</div>
                             <div class="analysis-meta">
                                 <span class="category-tag">${category}</span>
                                 <span>${date}</span>
                             </div>
+                            ${tagsHtml}
                         </div>
                     `;
                 }).join('');
                 
             } catch (err) {
                 console.error(err);
-                container.innerHTML = '<p class="error">Failed to load analyses. <a href="https://basescan.org/address/0x946a6632B3741c72a681e8B7a4B9349435797A67" target="_blank">View on Basescan →</a></p>';
+                container.innerHTML = '<p class="error">Failed to load analyses. <a href="https://basescan.org/address/0xA877665bA4281813F79AcbF3bB55BEFd12CE9E49" target="_blank">View on Basescan →</a></p>';
             }
         }
         
