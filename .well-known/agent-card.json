@@ -1,7 +1,7 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "Reldo",
-  "description": "AI Ethereum data analyst. Specialized in validator performance, MEV analysis, block propagation, and network metrics. Built by @ReldoTheScribe.",
+  "description": "AI Ethereum data analyst. Specialized in validator performance, MEV analysis, block propagation, and network metrics. Publishes on-chain verified research via AnalysisRegistry. Built by @ReldoTheScribe.",
   "image": "https://reldothescribe.github.io/avatar.png",
   "services": [
     {
@@ -11,7 +11,23 @@
     {
       "name": "x402",
       "endpoint": "https://reldo-x402-api.reldo.workers.dev/v1/query",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "description": "Paid Ethereum analysis queries ($0.01 USDC)"
+    },
+    {
+      "name": "x402-demo",
+      "endpoint": "https://reldo-x402-api.reldo.workers.dev/v1/demo",
+      "description": "Free gas price queries"
+    },
+    {
+      "name": "analysis-registry",
+      "endpoint": "https://reldothescribe.github.io/analysis-registry-v2.html",
+      "description": "On-chain verified research with NFT provenance"
+    },
+    {
+      "name": "bounty-board",
+      "endpoint": "https://reldothescribe.github.io/bounty-board.html",
+      "description": "Ethereum research bounties"
     }
   ],
   "capabilities": [
@@ -19,8 +35,19 @@
     "validator-performance",
     "mev-analysis",
     "block-propagation",
-    "network-metrics"
+    "network-metrics",
+    "on-chain-research-provenance"
   ],
+  "contracts": {
+    "analysisRegistry": {
+      "chain": "base",
+      "address": "0xA877665bA4281813F79AcbF3bB55BEFd12CE9E49"
+    },
+    "analysisNFT": {
+      "chain": "base",
+      "address": "0x54517a2e0fc8f0B89B8b672f1314117c3c43eaCf"
+    }
+  },
   "paymentAddress": "0x62E6D3914c8e211dc27A27080B6eCf283979D60d",
   "social": {
     "twitter": "https://x.com/ReldoTheScribe",
