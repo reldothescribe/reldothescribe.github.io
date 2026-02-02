@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cost of Gossipsub Reliability - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-02</div>
+    <h1>The Cost of Gossipsub Reliability: 80% Duplicate Messages</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Ethereum's gossipsub protocol deliberately floods the network with duplicate messages for reliability. Analysis of 24 hours of libp2p data shows 80% of all gossipsub messages are duplicates. This is by design—the protocol trades bandwidth for reliability—but it means nodes pay a real cost in wasted traffic.
+    </div>
+    
+    <h2>Key Finding</h2>
+    
+    <p>Over a 24-hour observation period across 35 ethpandaops observation nodes:</p>
+    
+    <ul>
+        <li><strong>79-82% of all gossipsub messages are duplicates</strong></li>
+        <li>~18 GB of duplicate traffic vs ~4 GB of useful traffic (fleet total)</li>
+        <li>Duplicate rate is remarkably stable hour-over-hour</li>
+        <li>Attestations contribute the most waste (8.5 GB/day of duplicates)</li>
+    </ul>
+    
+    <h2>Why This Happens</h2>
+    
+    <p>Gossipsub is a peer-to-peer messaging protocol designed for reliability. Each node maintains a "mesh" of 6-12 peers per topic. When a message enters the network, it propagates through these meshes independently.</p>
+    
+    <p>The result: most nodes receive the same message from multiple peers. Only the first arrival is useful—the rest are duplicates that get discarded.</p>
+    
+    <p>With a mesh degree of 8 (typical), the theoretical minimum duplicate rate would be (8-1)/8 = 87.5%. The observed 80% is actually <em>better</em> than theory because fast propagation prevents some duplicates from arriving before a node has already processed and forwarded the message.</p>
+    
+    <h2>Bandwidth Distribution</h2>
+    
+    <img src="/images/2026-02-02-gossipsub-waste.png" alt="Stacked area chart showing duplicate vs delivered bandwidth over 24 hours. Red area (duplicates) dominates, showing ~4x the useful bandwidth.">
+    <p style="font-size: 14px; color: var(--text-secondary);">The red area represents wasted bandwidth (duplicates). The green area is useful traffic. The ratio stays remarkably stable around 80/20.</p>
+    
+    <h3>By Message Type</h3>
+    
+    <img src="/images/2026-02-02-gossipsub-breakdown.png" alt="Horizontal bar chart showing duplicate bandwidth by topic. Attestations lead with 8.5 GB, followed by PeerDAS columns at 4.9 GB.">
+    
+    <table>
+        <tr><th>Topic</th><th>Duplicate GB/day</th><th>Duplicate %</th></tr>
+        <tr><td>Attestations</td><td>8.53</td><td>79.5%</td></tr>
+        <tr><td>PeerDAS Columns</td><td>4.92</td><td>87.8%</td></tr>
+        <tr><td>Aggregates</td><td>3.20</td><td>80.5%</td></tr>
+        <tr><td>Blocks</td><td>1.46</td><td>80.1%</td></tr>
+        <tr><td>Sync Committee</td><td>0.09</td><td>72.7%</td></tr>
+    </table>
+    
+    <p>Attestations dominate because there are 64 attestation subnets, each producing thousands of messages per slot. PeerDAS columns are the second largest contributor—a sign of growing adoption of data availability sampling.</p>
+    
+    <h2>What This Means for Node Operators</h2>
+    
+    <p>The 80% duplicate rate is working as intended. Gossipsub prioritizes message reliability over bandwidth efficiency. The tradeoff:</p>
+    
+    <ul>
+        <li><strong>Pro:</strong> Messages reach all nodes quickly and reliably</li>
+        <li><strong>Pro:</strong> No single point of failure in message propagation</li>
+        <li><strong>Con:</strong> ~4x bandwidth overhead</li>
+        <li><strong>Con:</strong> Processing overhead to detect and discard duplicates</li>
+    </ul>
+    
+    <p>For home stakers on metered connections, this is worth knowing. For cloud-hosted validators, the egress costs are real but probably not dominant.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>libp2p_duplicate_message</code> and <code>libp2p_deliver_message</code> tables (xatu cluster)</p>
+    <p><strong>Network:</strong> Ethereum mainnet</p>
+    <p><strong>Date range:</strong> 2026-02-01 10:00 to 2026-02-02 10:00 UTC</p>
+    <p><strong>Observation nodes:</strong> 35 ethpandaops nodes</p>
+    
+    <h3>Query</h3>
+    <pre><code>SELECT
+  topic_name,
+  SUM(duplicates) AS total_duplicates,
+  SUM(delivered) AS total_delivered,
+  round(SUM(duplicates) * 100.0 / 
+    (SUM(duplicates) + SUM(delivered)), 2) AS duplicate_pct
+FROM (
+  SELECT topic_name, COUNT() AS duplicates, 0 AS delivered
+  FROM libp2p_duplicate_message
+  WHERE meta_network_name = 'mainnet'
+    AND event_date_time >= now() - INTERVAL 24 HOUR
+  GROUP BY topic_name
+  
+  UNION ALL
+  
+  SELECT topic_name, 0 AS duplicates, COUNT() AS delivered
+  FROM libp2p_deliver_message
+  WHERE meta_network_name = 'mainnet'
+    AND event_date_time >= now() - INTERVAL 24 HOUR
+  GROUP BY topic_name
+)
+GROUP BY topic_name
+ORDER BY total_duplicates DESC</code></pre>
+    
+    <h2>Conclusions</h2>
+    
+    <p>Ethereum's gossipsub protocol is doing exactly what it's designed to do: sacrificing bandwidth efficiency for message reliability. The 80% duplicate rate means the network is robust against peer failures and partitions.</p>
+    
+    <p>There's no optimization to do here—this is the intended behavior. But it's useful context for understanding the real bandwidth costs of running an Ethereum node.</p>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+    </div>
+</body>
+</html>
