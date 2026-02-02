@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Mega MEV Events - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+        .highlight { background: #ffeb3b; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-03</div>
+    <h1>Ethereum Mega MEV Events: When Blocks Earn 69 ETH</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Discovered 5 mega MEV blocks worth 50-69 ETH each in 48 hours on Ethereum mainnet. The largest (69.06 ETH) is 3,946x the median MEV. These extreme outliers represent massive liquidation or arbitrage events where someone paid the equivalent of a US median annual salary to guarantee transaction inclusion.
+    </div>
+    
+    <h2>The Five Mega Blocks</h2>
+    
+    <p>Between January 31 and February 2, 2026, Ethereum witnessed five extraordinary MEV events where individual blocks captured 50-69 ETH in MEV rewards. To put this in perspective:</p>
+    
+    <ul>
+        <li>The <strong>median MEV</strong> per block over this period was <strong>0.0175 ETH</strong></li>
+        <li>The <strong>99.9th percentile</strong> was <strong>22.76 ETH</strong></li>
+        <li>The <strong>maximum</strong> was <strong>69.06 ETH</strong> — 3x higher than the 99.9th percentile</li>
+    </ul>
+    
+    <table>
+        <tr>
+            <th>Slot</th>
+            <th>MEV Value</th>
+            <th>Txs</th>
+            <th>Validator</th>
+            <th>Relay(s)</th>
+        </tr>
+        <tr>
+            <td>13,594,678</td>
+            <td><strong>69.06 ETH</strong></td>
+            <td>13</td>
+            <td>solo_staker</td>
+            <td>Ultra Sound</td>
+        </tr>
+        <tr>
+            <td>13,588,073</td>
+            <td><strong>66.81 ETH</strong></td>
+            <td>51</td>
+            <td>blockdaemon_lido</td>
+            <td>BloXroute Regulated</td>
+        </tr>
+        <tr>
+            <td>13,588,427</td>
+            <td><strong>65.97 ETH</strong></td>
+            <td>310</td>
+            <td>stakewise</td>
+            <td>Ultra Sound + Titan</td>
+        </tr>
+        <tr>
+            <td>13,588,422</td>
+            <td><strong>57.85 ETH</strong></td>
+            <td>89</td>
+            <td>stakefish</td>
+            <td>BloXroute Max Profit</td>
+        </tr>
+        <tr>
+            <td>13,587,962</td>
+            <td><strong>53.35 ETH</strong></td>
+            <td>100</td>
+            <td>unknown</td>
+            <td>Titan Relay</td>
+        </tr>
+    </table>
+    
+    <h2>The 69 ETH Block: A Deeper Look</h2>
+    
+    <p>The largest block is particularly fascinating. With only 13 transactions generating 69.06 ETH in MEV, that's an average of <strong>5.3 ETH per transaction</strong>. At current prices (~$2,640/ETH), that's approximately $182,000 paid to the validator.</p>
+    
+    <p>What kind of transaction justifies paying $182,000 in fees? Most likely:</p>
+    
+    <ul>
+        <li><strong>Large liquidation</strong> on a DeFi lending platform (Maker, Aave, Compound)</li>
+        <li><strong>Atomic arbitrage</strong> across multiple DEXs with significant price divergence</li>
+        <li><strong>NFT or token launch</strong> with guaranteed inclusion premium</li>
+        <li><strong>Cross-chain bridge</strong> arbitrage with time-sensitive execution</li>
+    </ul>
+    
+    <h3>Visualizing the Anomaly</h3>
+    
+    <img src="/images/mega-mev-events-48h.png" alt="Mega MEV Events Chart">
+    <p style="font-size: 14px; color: var(--text-secondary);">Hourly maximum MEV values over 48 hours, showing clear clustering of mega events.</p>
+    
+    <h2>Timing Clustering</h2>
+    
+    <p>The mega events didn't occur randomly. They clustered in specific time windows:</p>
+    
+    <ul>
+        <li><strong>January 31, 17:00-18:00 UTC</strong>: Four blocks totaling 243.98 ETH (slots 13587962, 13588073, 13588422, 13588427)</li>
+        <li><strong>February 1, 15:00 UTC</strong>: One block with 69.06 ETH</li>
+    </ul>
+    
+    <p>This clustering suggests market events — possibly liquidations following price movements — that created simultaneous arbitrage opportunities across multiple blocks.</p>
+    
+    <h2>MEV Distribution Context</h2>
+    
+    <img src="/images/mev-distribution-48h.png" alt="MEV Distribution Chart">
+    <p style="font-size: 14px; color: var(--text-secondary);">Distribution of MEV values showing the extreme right-tail outliers.</p>
+    
+    <p>Out of 13,510 blocks analyzed over 48 hours:</p>
+    
+    <ul>
+        <li>Only <strong>5 blocks</strong> (0.037%) exceeded 50 ETH in MEV</li>
+        <li>The <strong>95th percentile</strong> was just 0.45 ETH</li>
+        <li>The <strong>99th percentile</strong> was 2.63 ETH</li>
+        <li>Even the <strong>99.9th percentile</strong> (22.76 ETH) is dwarfed by these mega blocks</li>
+    </ul>
+    
+    <h2>The Solo Staker Lottery</h2>
+    
+    <p>Perhaps the most remarkable finding: the 69 ETH block was proposed by a <strong>solo staker</strong>, not a major staking pool. This illustrates the "MEV lottery" effect in Ethereum's proposer economy:</p>
+    
+    <ul>
+        <li>A solo staker running a ~$50,000 validator node randomly received the right to propose this block</li>
+        <li>In 12 seconds, they earned what would normally take <strong>5+ years</strong> of standard validation rewards</li>
+        <li>Meanwhile, massive pools like Lido and Coinbase, with thousands of validators, didn't capture these specific opportunities</li>
+    </ul>
+    
+    <p>This is the democratizing effect of MEV-Boost and the mev-boost auction market — while larger pools have more chances to propose blocks, when rare mega opportunities arise, they can go to anyone.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_block_mev_head</code> (xatu-cbt cluster)</p>
+    <p><strong>Date range:</strong> 2026-01-31 to 2026-02-02 (48 hours)</p>
+    <p><strong>Blocks analyzed:</strong> 13,510</p>
+    
+    <h3>Key Query</h3>
+    <pre><code>SELECT slot, block_number, value / 1e18 AS value_eth,
+       builder_pubkey, relay_names, transaction_count, gas_used
+FROM mainnet.fct_block_mev_head FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 48 HOUR
+  AND value > 50000000000000000000  -- > 50 ETH
+ORDER BY value DESC;</code></pre>
+    
+    <h2>Implications</h2>
+    
+    <h3>What This Tells Us</h3>
+    <p>These mega MEV events reveal the upper bounds of what market participants are willing to pay for guaranteed transaction inclusion. When someone pays 69 ETH (~$182,000) for blockspace, it signals:</p>
+    
+    <ol>
+        <li>There exist transactions worth significantly more than $182K that require blockchain settlement</li>
+        <li>The Ethereum blockspace market is functioning efficiently — the fees reflect real economic value</li>
+        <li>DeFi liquidations and arbitrage remain highly profitable, even in mature markets</li>
+    </ol>
+    
+    <h3>Questions Raised</h3>
+    <ul>
+        <li>What specific transactions drove these values? (Requires deeper transaction-level analysis)</li>
+        <li>Why did three of the five blocks use BloXroute relays? Is there a builder specialization?</li>
+        <li>What market conditions on Jan 31 caused the clustering of mega events?</li>
+    </ul>
+    
+    <h2>Limitations</h2>
+    <ul>
+        <li>MEV values are self-reported by relays and builders — actual profit could differ</li>
+        <li>We don't see the actual transaction content in this dataset</li>
+        <li>48 hours is a limited window — longer analysis would show if these are truly exceptional or part of a pattern</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;">Data accurate as of 2026-02-03 00:00 UTC</p>
+    </div>
+</body>
+</html>
