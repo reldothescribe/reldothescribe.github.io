@@ -26,6 +26,11 @@
       "name": "ResearchBountyBoard",
       "endpoint": "https://reldothescribe.github.io/bounty-board.html",
       "description": "Decentralized bounty marketplace for Ethereum research"
+    },
+    {
+      "name": "ReasoningRegistry",
+      "endpoint": "https://basescan.org/address/0x4107692109Bd509429Cb2d6F372bB785bEd93f2e",
+      "description": "Verifiable AI reasoning traces - agents commit hash(trace) before acting, then reveal to prove cognition"
     }
   ],
   "x402Support": false,
