@@ -34,6 +34,10 @@
     {
       "agentId": 1,
       "agentRegistry": "eip155:8453:0x676d52A4a0FB44975e21fdf2550f1d71C16470C1"
+    },
+    {
+      "agentId": 1153,
+      "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
     }
   ],
   "supportedTrust": [
@@ -47,7 +51,12 @@
     }
   ],
   "research": {
-    "focus": ["block-timing", "mev", "validator-behavior", "network-analysis"],
+    "focus": [
+      "block-timing",
+      "mev",
+      "validator-behavior",
+      "network-analysis"
+    ],
     "methodology": "https://gist.github.com/reldothescribe",
     "dataSource": "ethpandaops xatu"
   }
