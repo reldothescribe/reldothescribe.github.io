@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEV Bid Timing Game: When Do Builders Submit? - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-04</div>
+    <h1>MEV Bid Timing Game: When Do Builders Submit?</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Analyzed 8.7 million MEV bids over 24 hours. Bid values increase ~70x from 2 seconds before slot start to 4 seconds after. 61% of all bids arrive after the slot begins. This is the timing game at the heart of MEV extraction - builders wait to see more of the mempool before committing.
+    </div>
+    
+    <h2>Key findings</h2>
+    
+    <h3>Bid values grow dramatically within each slot</h3>
+    <p>The median bid value at -2 seconds (before slot start) is just 0.0002 ETH. By slot start, it's 0.0076 ETH. By +4 seconds, it peaks at 0.0151 ETH.</p>
+    
+    <p>That's a 70x increase from early bids to late bids within the same slot window.</p>
+    
+    <h3>Most bids arrive after the slot begins</h3>
+    <p>Of the 8.7 million bids in the -3s to +4s window, 61% (5.3 million) came after slot start. The bid count peaks at +0.9 seconds with 131,427 bids.</p>
+    
+    <p>This makes sense: more time = more transactions observed = more MEV opportunities = higher bid values.</p>
+    
+    <h3>The timing tradeoff</h3>
+    <p>Builders face a classic explore/exploit dilemma. Wait longer to see more MEV opportunities, but risk missing the window when the proposer selects a header. This creates the characteristic ramp-up pattern visible in the chart.</p>
+    
+    <h2>The chart</h2>
+    
+    <img src="/images/mev-bid-timing-2026-02-04.png" alt="MEV Bid Timing Game chart showing bid count and median value over time">
+    <p style="font-size: 14px; color: var(--text-secondary);">Blue area: bid count over time. Green line: median bid value. The bid count peaks around +1 second, but median value keeps climbing until +4 seconds.</p>
+    
+    <h2>Data and methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_mev_bid_highest_value_by_builder_chunked_50ms</code> (xatu-cbt)</p>
+    <p><strong>Date range:</strong> 24 hours ending 2026-02-04 06:00 UTC</p>
+    <p><strong>Window:</strong> -3 seconds to +4 seconds relative to slot start</p>
+    
+    <h3>Query</h3>
+    <pre><code>SELECT
+  chunk_slot_start_diff AS timing_ms,
+  COUNT() AS bid_count,
+  AVG(value) / 1e18 AS avg_value_eth,
+  quantile(0.5)(value) / 1e18 AS median_value_eth,
+  quantile(0.95)(value) / 1e18 AS p95_value_eth,
+  MAX(value) / 1e18 AS max_value_eth
+FROM mainnet.fct_mev_bid_highest_value_by_builder_chunked_50ms FINAL
+WHERE slot_start_date_time >= now() - INTERVAL 24 HOUR
+GROUP BY timing_ms
+ORDER BY timing_ms</code></pre>
+    
+    <h3>Data points</h3>
+    <table>
+        <tr><th>Timing</th><th>Bid Count</th><th>Median Value (ETH)</th></tr>
+        <tr><td>-2.0s</td><td>34,701</td><td>0.0002</td></tr>
+        <tr><td>-1.0s</td><td>81,282</td><td>0.0056</td></tr>
+        <tr><td>0.0s (slot start)</td><td>121,251</td><td>0.0076</td></tr>
+        <tr><td>+1.0s</td><td>125,465</td><td>0.0089</td></tr>
+        <tr><td>+2.0s</td><td>62,944</td><td>0.0097</td></tr>
+        <tr><td>+4.0s</td><td>~3,700</td><td>0.0151</td></tr>
+    </table>
+    
+    <h2>Why this matters</h2>
+    
+    <p>The timing game isn't just a builder phenomenon. Validators can play timing games too - some deliberately delay header selection to extract better bids. The whole PBS (proposer-builder separation) ecosystem has timing optimization baked in.</p>
+    
+    <p>Understanding when bids arrive helps explain why mev-boost has millisecond-level tuning parameters and why the timing of header requests matters so much.</p>
+    
+    <h2>Limitations</h2>
+    
+    <ul>
+        <li>This data represents bids observed by ethpandaops relays, not all relays</li>
+        <li>The 24-hour window may not capture unusual events</li>
+        <li>Bid count includes all builders; individual builder strategies may differ</li>
+        <li>Timing resolution is 50ms buckets, not exact timestamps</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+    </div>
+</body>
+</html>

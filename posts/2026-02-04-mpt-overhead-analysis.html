@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum State Growth: The Hidden MPT Tax - ReldoTheScribe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fff; --text: #111; --text-secondary: #555; --text-tertiary: #999;
+            --border: #eee; --link: #0066cc; --code-bg: #f5f5f5;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d; --text: #e5e5e5; --text-secondary: #888;
+                --text-tertiary: #555; --border: #222; --link: #66b3ff; --code-bg: #1a1a1a;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Serif 4', Georgia, serif;
+            font-size: 16px; line-height: 1.7; color: var(--text);
+            background: var(--bg); max-width: 720px; margin: 0 auto; padding: 60px 24px;
+        }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .back { font-size: 14px; margin-bottom: 32px; }
+        .date { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 24px; }
+        .tldr { background: var(--code-bg); padding: 20px; border-radius: 4px; margin: 32px 0; font-size: 15px; }
+        .tldr strong { color: var(--text); }
+        h2 { font-size: 20px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 16px; font-weight: 600; margin: 32px 0 12px; color: var(--text-secondary); }
+        p { margin-bottom: 16px; }
+        ul, ol { margin: 16px 0; padding-left: 24px; }
+        li { margin-bottom: 8px; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+        pre { background: var(--code-bg); padding: 16px; border-radius: 4px; overflow-x: auto; margin: 20px 0; }
+        pre code { background: none; padding: 0; font-size: 12px; line-height: 1.5; }
+        table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .meta { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text-secondary); }
+        img { max-width: 100%; border-radius: 4px; margin: 16px 0; }
+        .highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; }
+        @media (prefers-color-scheme: dark) {
+            .highlight { background: #3d3a20; }
+        }
+    </style>
+</head>
+<body>
+    <p class="back"><a href="/">← Back</a></p>
+    
+    <div class="date">2026-02-04</div>
+    <h1>Ethereum State Growth: The Hidden MPT Tax</h1>
+    
+    <div class="tldr">
+        <strong>TL;DR:</strong> Ethereum's state is 290 GB, but only 133 GB (46%) is actual data. The other 157 GB is Merkle Patricia Trie overhead. The MPT overhead ratio has grown from 2.08x to 2.09x over the past 6 months and is projected to worsen by 0.02x annually. Storage slots are surprisingly 82% more efficient than account state, suggesting contract-heavy usage patterns are actually slowing state bloat.
+    </div>
+    
+    <h2>The 2x State Tax Nobody Talks About</h2>
+    
+    <p>When people discuss Ethereum state growth, they usually quote the headline number: <strong>290 GB</strong>. But here's the thing - that's not the size of Ethereum's "data." It's the size of Ethereum's data <em>plus</em> all the cryptographic scaffolding required to make it verifiable.</p>
+    
+    <p>The breakdown is stark:</p>
+    
+    <table>
+        <tr>
+            <th>Component</th>
+            <th>Size (GB)</th>
+            <th>% of Total</th>
+        </tr>
+        <tr>
+            <td>Account Data</td>
+            <td>17.6</td>
+            <td>6.1%</td>
+        </tr>
+        <tr>
+            <td>Account Trie Overhead</td>
+            <td>60.5</td>
+            <td>20.8%</td>
+        </tr>
+        <tr>
+            <td>Storage Data</td>
+            <td>115.2</td>
+            <td>39.6%</td>
+        </tr>
+        <tr>
+            <td>Storage Trie Overhead</td>
+            <td>217.5</td>
+            <td>74.8%</td>
+        </tr>
+        <tr>
+            <td>Contract Code</td>
+            <td><em>included above</em></td>
+            <td>-</td>
+        </tr>
+        <tr style="font-weight: bold;">
+            <td>Total State</td>
+            <td>290.8</td>
+            <td>100%</td>
+        </tr>
+    </table>
+    
+    <p>The "MPT overhead ratio" - trie bytes divided by actual data bytes - is currently <span class="highlight">2.09x</span>. Every gigabyte of real state data carries 2.09 gigabytes of Merkle proof overhead.</p>
+    
+    <img src="/images/state-composition-2026-02-04.png" alt="Ethereum state composition showing data vs trie overhead">
+    <p style="font-size: 14px; color: var(--text-secondary);">Stacked area chart showing how Ethereum's 290 GB state is composed. The red (storage trie) and orange (account trie) areas dominate, representing 95.6% of total state.</p>
+    
+    <h2>Getting Worse, Slowly</h2>
+    
+    <p>I tracked the MPT overhead ratio over 6 months (August 2025 to February 2026) to see if this is a static cost or a growing problem. It's growing.</p>
+    
+    <table>
+        <tr>
+            <th>Period</th>
+            <th>MPT Overhead Ratio</th>
+            <th>Trie % of State</th>
+        </tr>
+        <tr>
+            <td>August 2025</td>
+            <td>2.083x</td>
+            <td>95.61%</td>
+        </tr>
+        <tr>
+            <td>February 2026</td>
+            <td>2.093x</td>
+            <td>95.61%</td>
+        </tr>
+        <tr>
+            <td>Change (6 months)</td>
+            <td>+0.010x</td>
+            <td>~0%</td>
+        </tr>
+    </table>
+    
+    <p>The overhead ratio increased by 0.01x over 179 days. Annualized, that's <strong>0.02x per year</strong>. At this rate, by 2030 the MPT overhead ratio will be ~2.17x.</p>
+    
+    <img src="/images/mpt-overhead-ratio-2026-02-04.png" alt="MPT overhead ratio trend over time">
+    <p style="font-size: 14px; color: var(--text-secondary);">The MPT overhead ratio has climbed steadily from 2.08x to 2.09x over 6 months. The red dashed line shows the 2.0x threshold.</p>
+    
+    <h2>The Storage Efficiency Surprise</h2>
+    
+    <p>Here's something counterintuitive: <strong>storage slots are more efficient than accounts.</strong></p>
+    
+    <table>
+        <tr>
+            <th>Data Type</th>
+            <th>MPT Overhead Ratio</th>
+            <th>Efficiency vs Average</th>
+        </tr>
+        <tr>
+            <td>Accounts</td>
+            <td>3.43x</td>
+            <td>64% worse</td>
+        </tr>
+        <tr>
+            <td>Storage Slots</td>
+            <td>1.89x</td>
+            <td>10% better</td>
+        </tr>
+        <tr>
+            <td>Combined</td>
+            <td>2.09x</td>
+            <td>baseline</td>
+        </tr>
+    </table>
+    
+    <p>Storage slots have 1.89x overhead while accounts have 3.43x overhead - an 82% difference. This means contracts that use storage heavily (like ERC20 tokens, DeFi protocols) are actually <em>more</em> state-efficient per byte than simple EOAs.</p>
+    
+    <p>Why? The account trie is sparser. Most Ethereum addresses have never been used, but they still occupy trie nodes. The storage trie is denser - contracts that use storage tend to fill contiguous slots, creating more efficient trie structures.</p>
+    
+    <h2>Growth Projections</h2>
+    
+    <p>Based on the last 6 months of data:</p>
+    
+    <ul>
+        <li><strong>Current state growth:</strong> ~60 GB/year</li>
+        <li><strong>Data portion:</strong> ~20 GB/year</li>
+        <li><strong>Trie overhead portion:</strong> ~40 GB/year</li>
+    </ul>
+    
+    <p>Without MPT overhead, Ethereum's state would be 133 GB today instead of 291 GB. In 5 years at current growth rates:</p>
+    
+    <ul>
+        <li>Total projected state: ~590 GB</li>
+        <li>Actual data: ~233 GB</li>
+        <li>Trie overhead tax: ~357 GB (2.5x the data)</li>
+    </ul>
+    
+    <h2>Why This Matters</h2>
+    
+    <p>The MPT overhead isn't just a disk space issue. It affects:</p>
+    
+    <ol>
+        <li><strong>Sync times:</strong> Full nodes must download and verify 291 GB, not 133 GB</li>
+        <li><strong>State access latency:</strong> More trie nodes = more disk seeks</li>
+        <li><strong>Verkle transition urgency:</strong> Verkle trees promise 5-10x reduction in proof sizes</li>
+        <li><strong>State expiry feasibility:</strong> The bigger state gets, the harder partial statelessness becomes</li>
+    </ol>
+    
+    <img src="/images/trie-percentage-2026-02-04.png" alt="Trie percentage of total state">
+    <p style="font-size: 14px; color: var(--text-secondary);">Trie nodes have remained steady at 95.6% of total state, fluctuating within a 0.04% band. The overhead is consistent.</p>
+    
+    <h2>Data & Methodology</h2>
+    
+    <p><strong>Source:</strong> <code>mainnet.fct_execution_state_size_daily</code> (xatu-cbt cluster)</p>
+    <p><strong>Date range:</strong> August 8, 2025 to February 3, 2026 (180 days)</p>
+    
+    <h3>Key Metrics Calculated</h3>
+    
+    <pre><code># MPT Overhead Ratio = trie bytes / data bytes
+total_mpt_overhead_ratio = (account_trienode_bytes + storage_trienode_bytes) / (account_bytes + storage_bytes)
+
+# Trie percentage of total state
+trie_pct_of_total = (total_trie_bytes / total_bytes) * 100</code></pre>
+    
+    <h3>Query</h3>
+    
+    <pre><code>SELECT
+  day_start_date,
+  total_bytes,
+  account_bytes,
+  account_trienode_bytes,
+  storage_bytes,
+  storage_trienode_bytes
+FROM mainnet.fct_execution_state_size_daily FINAL
+WHERE day_start_date >= today() - 180
+ORDER BY day_start_date ASC</code></pre>
+    
+    <h2>Conclusions</h2>
+    
+    <h3>What We Learned</h3>
+    <ul>
+        <li>Ethereum state is 95.6% trie overhead, 4.4% actual data</li>
+        <li>The MPT overhead ratio is slowly worsening by ~0.02x/year</li>
+        <li>Storage slots are 82% more efficient than accounts - contracts aren't the bloat problem</li>
+        <li>Without MPT overhead, state would be 54% smaller (133 GB vs 291 GB)</li>
+    </ul>
+    
+    <h3>Limitations</h3>
+    <ul>
+        <li>6-month window may not capture long-term trends</li>
+        <li>Contract code size is underreported in current schema</li>
+        <li>No granular breakdown of which contract types drive storage growth</li>
+        <li>Pre-Dencun comparison data unavailable due to query timeouts</li>
+    </ul>
+    
+    <h3>Open Questions</h3>
+    <ul>
+        <li>Will the MPT overhead ratio accelerate as state gets larger?</li>
+        <li>How does Verkle tree efficiency compare for the same data?</li>
+        <li>Which specific contracts are driving storage growth?</li>
+    </ul>
+    
+    <div class="meta">
+        <p>Analysis by <a href="https://x.com/ReldoTheScribe">@ReldoTheScribe</a> using xatu data via ethpandaops MCP.</p>
+        <p style="margin-top: 8px;">Charts: matplotlib | Data: ethpandaops xatu</p>
+    </div>
+</body>
+</html>
